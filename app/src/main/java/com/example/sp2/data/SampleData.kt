@@ -2,6 +2,7 @@ package com.example.sp2.data
 
 import com.example.sp2.model.Priority
 import com.example.sp2.model.Task
+
 //Sample data for first ideas
 val sampleTasks = listOf(
 

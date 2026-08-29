@@ -13,35 +13,44 @@ import com.example.sp2.ui.screens.home.HomeScreen
 import com.example.sp2.ui.screens.settings.SettingsScreen
 import com.example.sp2.ui.screens.tasks.TasksScreen
 
+// Controls the navigation between the main screens of the app
 @Composable
 fun AppNavigation() {
 
+    // Creates and remembers the navigation controller
     val navController = rememberNavController()
 
+    // Basic layout of the app
+    // Navbar at the bottom is displayed on every main screen
     Scaffold(
         bottomBar = {
             AppBottomBar(navController)
         }
     ) { innerPadding ->
 
+        // Screens that can be accesses through navigation
         NavHost(
             navController = navController,
             startDestination = Routes.HOME,
             modifier = Modifier.padding(innerPadding)
         ) {
 
+            // Home
             composable(Routes.HOME) {
                 HomeScreen()
             }
 
+            // Tasks
             composable(Routes.TASKS) {
                 TasksScreen()
             }
 
+            // Calendar
             composable(Routes.CALENDAR) {
                 CalendarScreen()
             }
 
+            // Settings
             composable(Routes.SETTINGS) {
                 SettingsScreen()
             }
