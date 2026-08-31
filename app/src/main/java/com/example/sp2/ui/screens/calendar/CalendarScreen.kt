@@ -10,36 +10,39 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import com.kizitonwose.calendar.core.DayPosition
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.kizitonwose.calendar.compose.HorizontalCalendar
 import com.kizitonwose.calendar.compose.rememberCalendarState
 import com.kizitonwose.calendar.core.CalendarDay
+import com.kizitonwose.calendar.core.DayPosition
+import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.YearMonth
 import java.time.format.TextStyle
 import java.util.Locale
 
-
 @Composable
 fun CalendarScreen() {
 
-    // Gets the current month
     val currentMonth = YearMonth.now()
 
-    // Creates the calendar state
     val calendarState = rememberCalendarState(
         startMonth = currentMonth.minusMonths(12),
         endMonth = currentMonth.plusMonths(12),
         firstVisibleMonth = currentMonth,
         firstDayOfWeek = DayOfWeek.MONDAY
     )
+
+    val coroutineScope = rememberCoroutineScope()
+
+    val visibleMonth = calendarState.firstVisibleMonth.yearMonth
 
     Column(
         modifier = Modifier
@@ -54,10 +57,14 @@ fun CalendarScreen() {
             verticalAlignment = Alignment.CenterVertically
         ) {
 
-            // Previous month button
+            // Previous month
             IconButton(
                 onClick = {
-                    // Month navigation will be added later
+                    coroutineScope.launch {
+                        calendarState.animateScrollToMonth(
+                            visibleMonth.minusMonths(1)
+                        )
+                    }
                 }
             ) {
                 Text(
@@ -66,19 +73,23 @@ fun CalendarScreen() {
                 )
             }
 
-            // Displays the current month and year
+            // Current visible month
             Text(
-                text = currentMonth.month.getDisplayName(
+                text = visibleMonth.month.getDisplayName(
                     TextStyle.FULL,
                     Locale.getDefault()
-                ) + " " + currentMonth.year,
+                ) + " " + visibleMonth.year,
                 style = MaterialTheme.typography.headlineSmall
             )
 
-            // Next month button
+            // Next month
             IconButton(
                 onClick = {
-                    // Month navigation will be added later
+                    coroutineScope.launch {
+                        calendarState.animateScrollToMonth(
+                            visibleMonth.plusMonths(1)
+                        )
+                    }
                 }
             ) {
                 Text(
@@ -88,16 +99,16 @@ fun CalendarScreen() {
             }
         }
 
-        // Adds some space between the header and calendar
         Spacer(
-            modifier = Modifier.height(16.dp)
+            modifier = Modifier.height(40.dp)
         )
 
-        //Displays the days of the week
+        // Days of the week
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceAround
-        ){
+        ) {
+
             val weekdays = listOf(
                 "Mon",
                 "Tue",
@@ -109,6 +120,7 @@ fun CalendarScreen() {
             )
 
             weekdays.forEach { day ->
+
                 Text(
                     text = day,
                     style = MaterialTheme.typography.labelMedium,
@@ -117,11 +129,9 @@ fun CalendarScreen() {
             }
         }
 
-        // Displays the calendar
         HorizontalCalendar(
             state = calendarState,
 
-            // Defines how each individual day is displayed
             dayContent = { day ->
                 CalendarDayContent(day)
             }
@@ -129,15 +139,13 @@ fun CalendarScreen() {
     }
 }
 
-// Displays an individual day in the calendar
 @Composable
 fun CalendarDayContent(day: CalendarDay) {
 
     val isCurrentMonth = day.position == DayPosition.MonthDate
 
     Box(
-        modifier = Modifier
-            .aspectRatio(1f),
+        modifier = Modifier.aspectRatio(1f),
         contentAlignment = Alignment.Center
     ) {
 
