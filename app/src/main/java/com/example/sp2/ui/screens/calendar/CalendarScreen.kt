@@ -75,10 +75,12 @@ fun CalendarScreen() {
 
             // Current visible month
             Text(
-                text = visibleMonth.month.getDisplayName(
+                text = (visibleMonth.month.getDisplayName(
                     TextStyle.FULL,
                     Locale.getDefault()
-                ) + " " + visibleMonth.year,
+                ) + " " + visibleMonth.year).replaceFirstChar {
+                    it.titlecase()
+                },
                 style = MaterialTheme.typography.headlineSmall
             )
 
