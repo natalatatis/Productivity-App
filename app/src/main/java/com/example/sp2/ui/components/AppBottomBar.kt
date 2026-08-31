@@ -14,6 +14,8 @@ import androidx.compose.runtime.getValue
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.sp2.navigation.Routes
+import androidx.compose.ui.res.stringResource
+import com.example.sp2.R
 
 // Represents an item in the bottom navigation bar
 // Each item has a name, route and icon
@@ -31,22 +33,22 @@ fun AppBottomBar(
     // Defines the screens that will appear in the bottom navigation bar
     val items = listOf(
         BottomNavItem(
-            title = "Home",
+            title = stringResource(R.string.nav_home),
             route = Routes.HOME,
             icon = Icons.Default.Home
         ),
         BottomNavItem(
-            title = "Tasks",
+            title = stringResource(R.string.nav_tasks),
             route = Routes.TASKS,
             icon = Icons.Default.CheckCircle
         ),
         BottomNavItem(
-            title = "Calendar",
+            title = stringResource(R.string.nav_calendar),
             route = Routes.CALENDAR,
             icon = Icons.Default.DateRange
         ),
         BottomNavItem(
-            title = "Settings",
+            title = stringResource(R.string.nav_settings),
             route = Routes.SETTINGS,
             icon = Icons.Default.Settings
         )

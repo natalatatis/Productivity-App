@@ -17,6 +17,8 @@ import androidx.compose.ui.unit.dp
 import com.example.sp2.data.sampleTasks
 import com.example.sp2.model.Task
 import com.example.sp2.ui.components.HabitStreakCard
+import androidx.compose.ui.res.stringResource
+import com.example.sp2.R
 
 // Displays the main home screen of the application
 @Composable
@@ -44,7 +46,7 @@ fun HomeScreen() {
             Column {
 
                 Text(
-                    text = "Good afternoon",
+                    text = stringResource(R.string.home_greeting),
                     style = MaterialTheme.typography.headlineMedium
                 )
 
@@ -66,7 +68,7 @@ fun HomeScreen() {
         // Section title for today's tasks
         item {
             Text(
-                text = "Today",
+                text = stringResource(R.string.home_today),
                 style = MaterialTheme.typography.titleLarge
             )
         }
@@ -81,7 +83,7 @@ fun HomeScreen() {
         item {
 
             Text(
-                text = "Upcoming",
+                text = stringResource(R.string.home_upcoming),
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(top = 8.dp)
             )

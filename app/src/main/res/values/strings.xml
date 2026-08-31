@@ -1,3 +1,33 @@
 <resources>
+    <!-- App -->
     <string name="app_name">SP2</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_tasks">Tasks</string>
+    <string name="nav_calendar">Calendar</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Home -->
+    <string name="home_greeting">Good afternoon</string>
+    <string name="home_today">Today</string>
+    <string name="home_upcoming">Upcoming</string>
+    <string name="home_keep_going">Keep it going!</string>
+    <string name="home_day_streak">%1$d day streak</string>
+
+    <!-- Tasks -->
+    <string name="task_finish_networking">Finish networking homework</string>
+    <string name="task_networking_description">Complete questions 1–10</string>
+    <string name="task_buy_notebook">Buy a notebook</string>
+    <string name="task_project_meeting">Project meeting</string>
+    <string name="task_study_statistics">Study for statistics</string>
+
+    <!-- Calendar -->
+    <string name="calendar_previous_month">Previous month</string>
+    <string name="calendar_next_month">Next month</string>
+
+    <!-- Common -->
+    <string name="priority_low">Low</string>
+    <string name="priority_medium">Medium</string>
+    <string name="priority_high">High</string>
 </resources>

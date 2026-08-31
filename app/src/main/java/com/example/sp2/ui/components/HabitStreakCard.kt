@@ -23,6 +23,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.example.sp2.R
 
 // Displays the user's current habit streak and the progress of the last seven days
 @Composable
@@ -84,12 +86,17 @@ fun HabitStreakCard(
                 Column {
 
                     Text(
-                        text = "$streak day streak",
+                        text = stringResource(
+                            R.string.home_day_streak,
+                            streak
+                        ),
                         style = MaterialTheme.typography.titleLarge
                     )
 
                     Text(
-                        text = "Keep it going!",
+                        text = stringResource(
+                            R.string.home_keep_going
+                        ),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
@@ -159,3 +166,4 @@ fun HabitStreakCard(
         }
     }
 }
+
