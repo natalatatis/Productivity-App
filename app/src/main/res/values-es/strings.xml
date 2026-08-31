@@ -30,4 +30,15 @@
     <string name="priority_low">Baja</string>
     <string name="priority_medium">Media</string>
     <string name="priority_high">Alta</string>
+
+    <!-- Settings-->
+    <string name="settings_title">Configuración</string>
+    <string name="settings_notifications">Notificaciones</string>
+    <string name="settings_enable_notifications">Activar notificaciones</string>
+    <string name="settings_notifications_description">Recibe recordatorios de tus tareas</string>
+    <string name="settings_language">Idioma</string>
+    <string name="settings_english">Inglés</string>
+    <string name="settings_spanish">Español</string>
+    <string name="settings_about">Acerca de</string>
+    <string name="settings_app_version">Versión 1.0</string>
 </resources>

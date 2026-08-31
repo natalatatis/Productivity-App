@@ -30,4 +30,15 @@
     <string name="priority_low">Low</string>
     <string name="priority_medium">Medium</string>
     <string name="priority_high">High</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_notifications">Notifications</string>
+    <string name="settings_enable_notifications">Enable notifications</string>
+    <string name="settings_notifications_description">Receive reminders for your tasks</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_english">English</string>
+    <string name="settings_spanish">Spanish</string>
+    <string name="settings_about">About</string>
+    <string name="settings_app_version">Version 1.0</string>
 </resources>
