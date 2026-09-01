@@ -7,4 +7,6 @@ object Routes {
     const val CALENDAR = "calendar"
     const val SETTINGS = "settings"
 
+    const val ADD_TASK = "add_task"
+
 }

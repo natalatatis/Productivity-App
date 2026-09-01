@@ -1,4 +1,5 @@
 <resources>
+
     <!-- App -->
     <string name="app_name">SP2</string>
 
@@ -16,22 +17,30 @@
     <string name="home_day_streak">Racha de %1$d días</string>
 
     <!-- Tasks -->
-    <string name="task_finish_networking">Terminar tarea de redes</string>
-    <string name="task_networking_description">Completar preguntas 1–10</string>
-    <string name="task_buy_notebook">Comprar un cuaderno</string>
-    <string name="task_project_meeting">Reunión del proyecto</string>
-    <string name="task_study_statistics">Estudiar estadística</string>
+    <string name="tasks_title">Tareas</string>
+    <string name="tasks_empty_title">Aún no hay tareas</string>
+    <string name="tasks_empty_description">Presiona + para agregar tu primera tarea</string>
+    <string name="task_add">Agregar tarea</string>
+    <string name="task_edit">Editar tarea</string>
+    <string name="task_title">Título de la tarea</string>
+    <string name="task_description">Descripción</string>
+    <string name="task_priority">Prioridad</string>
+    <string name="task_no_priority">Sin prioridad</string>
+    <string name="task_delete">Eliminar tarea</string>
+    <string name="task_save">Guardar cambios</string>
+    <string name="task_cancel">Cancelar</string>
+    <string name="task_add_description">Agregar una descripción</string>
+
+    <!-- Common priorities -->
+    <string name="priority_low">Baja</string>
+    <string name="priority_medium">Media</string>
+    <string name="priority_high">Alta</string>
 
     <!-- Calendar -->
     <string name="calendar_previous_month">Mes anterior</string>
     <string name="calendar_next_month">Mes siguiente</string>
 
-    <!-- Common -->
-    <string name="priority_low">Baja</string>
-    <string name="priority_medium">Media</string>
-    <string name="priority_high">Alta</string>
-
-    <!-- Settings-->
+    <!-- Settings -->
     <string name="settings_title">Configuración</string>
     <string name="settings_notifications">Notificaciones</string>
     <string name="settings_enable_notifications">Activar notificaciones</string>
@@ -41,4 +50,5 @@
     <string name="settings_spanish">Español</string>
     <string name="settings_about">Acerca de</string>
     <string name="settings_app_version">Versión 1.0</string>
+
 </resources>

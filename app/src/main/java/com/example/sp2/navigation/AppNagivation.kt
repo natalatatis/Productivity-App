@@ -12,6 +12,7 @@ import com.example.sp2.ui.screens.calendar.CalendarScreen
 import com.example.sp2.ui.screens.home.HomeScreen
 import com.example.sp2.ui.screens.settings.SettingsScreen
 import com.example.sp2.ui.screens.tasks.TasksScreen
+import com.example.sp2.ui.screens.tasks.AddTaskScreen
 
 // Controls the navigation between the main screens of the app
 @Composable
@@ -42,7 +43,11 @@ fun AppNavigation() {
 
             // Tasks
             composable(Routes.TASKS) {
-                TasksScreen()
+                TasksScreen(
+                    onAddTask = {
+                        navController.navigate(Routes.ADD_TASK)
+                    }
+                )
             }
 
             // Calendar
@@ -53,6 +58,15 @@ fun AppNavigation() {
             // Settings
             composable(Routes.SETTINGS) {
                 SettingsScreen()
+            }
+
+            // Add Task
+            composable(Routes.ADD_TASK) {
+                AddTaskScreen(
+                    onTaskAdded = {
+                        navController.popBackStack()
+                    }
+                )
             }
         }
     }
