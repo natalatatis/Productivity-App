@@ -13,91 +13,84 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.example.sp2.data.sampleTasks
+import com.example.sp2.R
+import com.example.sp2.data.TaskManager
+import com.example.sp2.model.Priority
 import com.example.sp2.model.Task
 import com.example.sp2.ui.components.HabitStreakCard
-import androidx.compose.ui.res.stringResource
-import com.example.sp2.R
 
-// Displays the main home screen of the application
 @Composable
 fun HomeScreen() {
 
-    // Separates today's tasks from the upcoming tasks
-    val todayTasks = sampleTasks.filter {
-        it.date == "Today"
+    // Gets the current tasks from the TaskManager
+    val tasks = TaskManager.tasks
+
+    // Only displays tasks that have not been completed
+    val activeTasks = tasks.filter {
+        !it.completed
     }
 
-    val upcomingTasks = sampleTasks.filter {
-        it.date != "Today"
-    }
-
-    // Creates a vertically scrollable list for the home screen
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
 
-        // Displays the greeting and current date
+        // Greeting
         item {
 
-            Column {
-
-                Text(
-                    text = stringResource(R.string.home_greeting),
-                    style = MaterialTheme.typography.headlineMedium
-                )
-
-                Text(
-                    text = "Thursday, August 28",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+            Text(
+                text = stringResource(R.string.home_greeting),
+                style = MaterialTheme.typography.headlineMedium
+            )
         }
 
-        // Displays the user's current habit streak
+        // Streak
         item {
+
             HabitStreakCard(
                 streak = 7
             )
         }
 
-        // Section title for today's tasks
+        // Today's tasks section
         item {
+
             Text(
                 text = stringResource(R.string.home_today),
                 style = MaterialTheme.typography.titleLarge
             )
         }
 
-        // Displays each task scheduled for today
-        items(todayTasks) { task ->
+        // Dynamic tasks
+        if (activeTasks.isEmpty()) {
 
-            TaskCard(task)
-        }
+            item {
 
-        // Section title for upcoming tasks
-        item {
+                Text(
+                    text = stringResource(
+                        R.string.tasks_empty_title
+                    ),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
 
-            Text(
-                text = stringResource(R.string.home_upcoming),
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.padding(top = 8.dp)
-            )
-        }
+        } else {
 
-        // Displays tasks scheduled for future dates
-        items(upcomingTasks) { task ->
+            items(
+                items = activeTasks,
+                key = { it.id }
+            ) { task ->
 
-            TaskCard(task)
+                TaskCard(task)
+            }
         }
     }
 }
 
-// Displays the information of an individual task
 @Composable
 private fun TaskCard(
     task: Task
@@ -112,13 +105,13 @@ private fun TaskCard(
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
 
-            // Displays the task title
+            // Task title
             Text(
                 text = task.title,
                 style = MaterialTheme.typography.titleMedium
             )
 
-            // Displays the description only if one exists
+            // Description
             if (task.description.isNotEmpty()) {
 
                 Text(
@@ -127,18 +120,42 @@ private fun TaskCard(
                 )
             }
 
-            // Displays the date and time of the task
+            // Priority
             Text(
-                text = "${task.date} · ${task.time}",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            // Displays the priority assigned to the task
-            Text(
-                text = task.priority.name,
-                style = MaterialTheme.typography.labelMedium
+                text = priorityText(task.priority),
+                style = MaterialTheme.typography.labelMedium,
+                color = when (task.priority) {
+                    Priority.NONE -> MaterialTheme.colorScheme.onSurfaceVariant
+                    Priority.LOW -> MaterialTheme.colorScheme.primary
+                    Priority.MEDIUM -> MaterialTheme.colorScheme.tertiary
+                    Priority.HIGH -> MaterialTheme.colorScheme.error
+                }
             )
         }
+    }
+}
+
+@Composable
+private fun priorityText(
+    priority: Priority
+): String {
+
+    return when (priority) {
+
+        Priority.NONE -> stringResource(
+            R.string.task_no_priority
+        )
+
+        Priority.LOW -> stringResource(
+            R.string.priority_low
+        )
+
+        Priority.MEDIUM -> stringResource(
+            R.string.priority_medium
+        )
+
+        Priority.HIGH -> stringResource(
+            R.string.priority_high
+        )
     }
 }
