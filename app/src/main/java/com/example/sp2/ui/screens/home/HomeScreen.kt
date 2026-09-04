@@ -12,17 +12,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.outlined.CheckCircle
-import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -35,9 +36,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.sp2.R
 import com.example.sp2.data.TaskManager
-import com.example.sp2.model.Priority
 import com.example.sp2.model.Task
+import com.example.sp2.ui.components.EmptyState
 import com.example.sp2.ui.components.HabitStreakCard
+import com.example.sp2.ui.components.PriorityChip
+import com.example.sp2.ui.components.SectionHeader
 import java.time.format.DateTimeFormatter
 
 @Composable
@@ -79,9 +82,8 @@ fun HomeScreen(
 
         // Today's tasks section
         item {
-            Text(
-                text = stringResource(R.string.home_today),
-                style = MaterialTheme.typography.titleLarge
+            SectionHeader(
+                title = stringResource(R.string.home_today)
             )
         }
 
@@ -89,10 +91,9 @@ fun HomeScreen(
         if (activeTasks.isEmpty()) {
 
             item {
-                Text(
-                    text = stringResource(R.string.tasks_empty_title),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                EmptyState(
+                    title = stringResource(R.string.tasks_empty_title),
+                    description = stringResource(R.string.tasks_empty_description)
                 )
             }
 
@@ -146,7 +147,8 @@ private fun TaskCard(
 
     Box {
 
-        Card(
+        // Rounded, container-colored surface matching HabitStreakCard's language
+        Surface(
             modifier = Modifier
                 .fillMaxWidth()
                 .combinedClickable(
@@ -154,12 +156,14 @@ private fun TaskCard(
                     onLongClick = {
                         showMenu = true
                     }
-                )
+                ),
+            shape = RoundedCornerShape(20.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
         ) {
 
             Column(
                 modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
 
                 Row(
@@ -179,7 +183,8 @@ private fun TaskCard(
                             },
                             contentDescription = stringResource(
                                 R.string.task_mark_done
-                            )
+                            ),
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
 
@@ -190,43 +195,45 @@ private fun TaskCard(
                     )
                 }
 
+                // Priority chip, always visible (compact, matches the new rounded style)
+                Row(
+                    modifier = Modifier.padding(start = 48.dp)
+                ) {
+                    PriorityChip(priority = task.priority)
+                }
+
                 // Extra details, only shown when the task is expanded
                 if (isExpanded) {
 
-                    if (task.description.isNotEmpty()) {
-                        Text(
-                            text = task.description,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
+                    Column(
+                        modifier = Modifier.padding(start = 48.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
 
-                    if (task.date != null || task.time != null) {
-
-                        val dateText = task.date?.format(
-                            DateTimeFormatter.ofPattern("dd/MM/yyyy")
-                        ) ?: ""
-
-                        val timeText = task.time?.format(
-                            DateTimeFormatter.ofPattern("HH:mm")
-                        ) ?: ""
-
-                        Text(
-                            text = "$dateText $timeText".trim(),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-
-                    Text(
-                        text = priorityText(task.priority),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = when (task.priority) {
-                            Priority.NONE -> MaterialTheme.colorScheme.onSurfaceVariant
-                            Priority.LOW -> MaterialTheme.colorScheme.primary
-                            Priority.MEDIUM -> MaterialTheme.colorScheme.tertiary
-                            Priority.HIGH -> MaterialTheme.colorScheme.error
+                        if (task.description.isNotEmpty()) {
+                            Text(
+                                text = task.description,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
                         }
-                    )
+
+                        if (task.date != null || task.time != null) {
+
+                            val dateText = task.date?.format(
+                                DateTimeFormatter.ofPattern("dd/MM/yyyy")
+                            ) ?: ""
+
+                            val timeText = task.time?.format(
+                                DateTimeFormatter.ofPattern("HH:mm")
+                            ) ?: ""
+
+                            Text(
+                                text = "$dateText $timeText".trim(),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -265,20 +272,5 @@ private fun TaskCard(
                 }
             )
         }
-    }
-}
-
-// Returns the localized text for each priority level
-@Composable
-private fun priorityText(
-    priority: Priority
-): String {
-
-    return when (priority) {
-
-        Priority.NONE -> stringResource(R.string.task_no_priority)
-        Priority.LOW -> stringResource(R.string.priority_low)
-        Priority.MEDIUM -> stringResource(R.string.priority_medium)
-        Priority.HIGH -> stringResource(R.string.priority_high)
     }
 }

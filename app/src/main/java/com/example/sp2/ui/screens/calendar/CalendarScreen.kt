@@ -32,6 +32,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.sp2.R
 import com.example.sp2.data.TaskManager
+import com.example.sp2.ui.components.EmptyState
 import com.example.sp2.ui.components.TaskItem
 import com.kizitonwose.calendar.compose.HorizontalCalendar
 import com.kizitonwose.calendar.compose.rememberCalendarState
@@ -187,14 +188,15 @@ fun CalendarScreen(onEditTask: (Int) -> Unit = {}) {
 
             if (currentSelectedDate == null) {
 
-                Text(
-                    text = stringResource(
-                        R.string.calendar_no_date_selected
-                    ),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                Column(
                     modifier = Modifier.align(Alignment.Center)
-                )
+                ) {
+                    EmptyState(
+                        title = stringResource(
+                            R.string.calendar_no_date_selected
+                        )
+                    )
+                }
 
             } else {
 
@@ -220,12 +222,10 @@ fun CalendarScreen(onEditTask: (Int) -> Unit = {}) {
 
                     if (tasksForDay.isEmpty()) {
 
-                        Text(
-                            text = stringResource(
+                        EmptyState(
+                            title = stringResource(
                                 R.string.calendar_no_tasks_this_day
-                            ),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         )
 
                     } else {
