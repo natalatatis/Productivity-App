@@ -30,6 +30,7 @@
     <string name="task_save">Save changes</string>
     <string name="task_cancel">Cancel</string>
     <string name="task_add_description">Add a description</string>
+    <string name="task_mark_done">Mark done</string>
 
     <!-- Common priorities -->
     <string name="priority_low">Low</string>
@@ -51,4 +52,28 @@
     <string name="settings_about">About</string>
     <string name="settings_app_version">Version 1.0</string>
 
+    <string name="nav_back">Return</string>
+    <string name="task_date">Date</string>
+    <string name="task_select_date">Select date</string>
+    <string name="task_reminder">Reminder</string>
+    <string name="task_repeat">Repeat</string>
+    <string name="action_confirm">Confirm</string>
+    <string name="action_cancel">Cancel</string>
+
+    <string name="reminder_none">No reminder</string>
+    <string name="reminder_once">Only once</string>
+    <string name="reminder_daily">Daily</string>
+    <string name="reminder_weekly">Weekly</string>
+    <string name="reminder_monthly">Monthly</string>
+
+    <string name="repeat_none">Never</string>
+    <string name="repeat_daily">Every day</string>
+    <string name="repeat_weekly">Every week</string>
+    <string name="repeat_monthly">Every month</string>
+    <string name="repeat_yearly">Every year</string>
+
+    <string name="calendar_no_date_selected">No date selected</string>
+    <string name="calendar_no_tasks_this_day">No tasks for today</string>
+
+    <string name="task_edit_title">Edit task</string>
 </resources>

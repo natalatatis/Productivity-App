@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.sp2.R
+import com.example.sp2.data.LanguageManager
 
 @Composable
 fun SettingsScreen() {
@@ -31,9 +32,8 @@ fun SettingsScreen() {
         mutableStateOf(true)
     }
 
-    var selectedLanguage by remember {
-        mutableStateOf("English")
-    }
+    // Reads and writes the app's current language directly from LanguageManager
+    var selectedLanguage by LanguageManager.currentLanguage
 
     Column(
         modifier = Modifier
@@ -90,11 +90,6 @@ fun SettingsScreen() {
 
         HorizontalDivider()
 
-        // Theme
-
-
-        HorizontalDivider()
-
         // Language section
         Text(
             text = stringResource(R.string.settings_language),
@@ -107,9 +102,9 @@ fun SettingsScreen() {
         ) {
 
             RadioButton(
-                selected = selectedLanguage == "English",
+                selected = selectedLanguage == "en",
                 onClick = {
-                    selectedLanguage = "English"
+                    selectedLanguage = "en"
                 }
             )
 
@@ -125,9 +120,9 @@ fun SettingsScreen() {
         ) {
 
             RadioButton(
-                selected = selectedLanguage == "Spanish",
+                selected = selectedLanguage == "es",
                 onClick = {
-                    selectedLanguage = "Spanish"
+                    selectedLanguage = "es"
                 }
             )
 

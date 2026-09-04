@@ -30,6 +30,7 @@
     <string name="task_save">Guardar cambios</string>
     <string name="task_cancel">Cancelar</string>
     <string name="task_add_description">Agregar una descripción</string>
+    <string name="task_mark_done">Marcar como terminado</string>
 
     <!-- Common priorities -->
     <string name="priority_low">Baja</string>
@@ -51,4 +52,28 @@
     <string name="settings_about">Acerca de</string>
     <string name="settings_app_version">Versión 1.0</string>
 
+    <string name="nav_back">Regresar</string>
+    <string name="task_date">Fecha</string>
+    <string name="task_select_date">Seleccionar fecha</string>
+    <string name="task_reminder">Recordatorio</string>
+    <string name="task_repeat">Repetir</string>
+    <string name="action_confirm">Confirmar</string>
+    <string name="action_cancel">Cancelar</string>
+
+    <string name="reminder_none">Sin recordatorio</string>
+    <string name="reminder_once">Una vez</string>
+    <string name="reminder_daily">Diario</string>
+    <string name="reminder_weekly">Semanal</string>
+    <string name="reminder_monthly">Mensual</string>
+
+    <string name="repeat_none">No repetir</string>
+    <string name="repeat_daily">Cada día</string>
+    <string name="repeat_weekly">Cada semana</string>
+    <string name="repeat_monthly">Cada mes</string>
+    <string name="repeat_yearly">Cada año</string>
+
+    <string name="calendar_no_date_selected">No tienes ninguna fecha seleccionada</string>
+    <string name="calendar_no_tasks_this_day">No hay tareas para este día</string>
+
+    <string name="task_edit_title">Editar tarea</string>
 </resources>

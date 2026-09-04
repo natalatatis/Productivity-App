@@ -1,7 +1,12 @@
 package com.example.sp2.data
 
 import androidx.compose.runtime.mutableStateListOf
+import com.example.sp2.model.Priority
+import com.example.sp2.model.ReminderFrequency
+import com.example.sp2.model.RepeatFrequency
 import com.example.sp2.model.Task
+import java.time.LocalDate
+import java.time.LocalTime
 
 object TaskManager {
 
@@ -12,14 +17,22 @@ object TaskManager {
     fun addTask(
         title: String,
         description: String,
-        priority: com.example.sp2.model.Priority
+        priority: Priority,
+        date: LocalDate? = null,
+        time: LocalTime? = null,
+        reminder: ReminderFrequency = ReminderFrequency.NONE,
+        repeat: RepeatFrequency = RepeatFrequency.NONE
     ) {
         tasks.add(
             Task(
                 id = nextId++,
                 title = title,
                 description = description,
-                priority = priority
+                priority = priority,
+                date = date,
+                time = time,
+                reminder = reminder,
+                repeat = repeat
             )
         )
     }
