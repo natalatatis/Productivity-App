@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.sp2.R
+import com.example.sp2.data.LanguageManager
 import com.example.sp2.data.TaskManager
 import com.example.sp2.ui.components.EmptyState
 import com.example.sp2.ui.components.TaskItem
@@ -61,6 +62,10 @@ fun CalendarScreen(onEditTask: (Int) -> Unit = {}) {
     val coroutineScope = rememberCoroutineScope()
 
     val visibleMonth = calendarState.firstVisibleMonth.yearMonth
+
+    // Reads the language currently selected in the app, so the month
+    // name updates immediately when the user switches language
+    val language by LanguageManager.currentLanguage
 
     // Gets the current tasks from the TaskManager
     val tasks = TaskManager.tasks
@@ -99,11 +104,11 @@ fun CalendarScreen(onEditTask: (Int) -> Unit = {}) {
                 )
             }
 
-            // Current visible month
+            // Current visible month, using the app's selected language
             Text(
                 text = (visibleMonth.month.getDisplayName(
                     TextStyle.FULL,
-                    Locale.getDefault()
+                    Locale(language)
                 ) + " " + visibleMonth.year).replaceFirstChar {
                     it.titlecase()
                 },
@@ -138,7 +143,13 @@ fun CalendarScreen(onEditTask: (Int) -> Unit = {}) {
         ) {
 
             val weekdays = listOf(
-                "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"
+                stringResource(R.string.weekday_mon),
+                stringResource(R.string.weekday_tue),
+                stringResource(R.string.weekday_wed),
+                stringResource(R.string.weekday_thu),
+                stringResource(R.string.weekday_fri),
+                stringResource(R.string.weekday_sat),
+                stringResource(R.string.weekday_sun)
             )
 
             weekdays.forEach { day ->
