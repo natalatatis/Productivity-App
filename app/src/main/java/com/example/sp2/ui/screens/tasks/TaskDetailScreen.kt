@@ -39,7 +39,7 @@ import com.example.sp2.model.RepeatFrequency
 import com.example.sp2.model.Task
 import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneId
+import java.time.ZoneOffset
 
 // Displays the screen for editing an existing task
 @OptIn(ExperimentalMaterial3Api::class)
@@ -61,7 +61,7 @@ fun TaskDetailScreen(
     var selectedDateMillis by remember {
         mutableStateOf(
             task.date
-                ?.atStartOfDay(ZoneId.systemDefault())
+                ?.atStartOfDay(ZoneOffset.UTC)
                 ?.toInstant()
                 ?.toEpochMilli()
         )
@@ -146,7 +146,7 @@ fun TaskDetailScreen(
 
                 val selectedDate = selectedDateMillis?.let { millis ->
                     Instant.ofEpochMilli(millis)
-                        .atZone(ZoneId.systemDefault())
+                        .atZone(ZoneOffset.UTC)
                         .toLocalDate()
                 }
 
@@ -190,9 +190,9 @@ fun TaskDetailScreen(
             Button(
                 onClick = {
 
-                    val selectedDate: LocalDate? = selectedDateMillis?.let { millis ->
+                    val selectedDate = selectedDateMillis?.let { millis ->
                         Instant.ofEpochMilli(millis)
-                            .atZone(ZoneId.systemDefault())
+                            .atZone(ZoneOffset.UTC)
                             .toLocalDate()
                     }
 

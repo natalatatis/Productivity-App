@@ -39,7 +39,7 @@ import com.example.sp2.model.ReminderFrequency
 import com.example.sp2.model.RepeatFrequency
 import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneId
+import java.time.ZoneOffset
 
 // Displays the screen for creating a new task
 @OptIn(ExperimentalMaterial3Api::class)
@@ -181,7 +181,7 @@ fun AddTaskScreen(
 
                 val selectedDate = selectedDateMillis?.let { millis ->
                     Instant.ofEpochMilli(millis)
-                        .atZone(ZoneId.systemDefault())
+                        .atZone(ZoneOffset.UTC)
                         .toLocalDate()
                 }
 
@@ -246,7 +246,7 @@ fun AddTaskScreen(
                 onClick = {
                     val selectedDate = selectedDateMillis?.let { millis ->
                         Instant.ofEpochMilli(millis)
-                            .atZone(ZoneId.systemDefault())
+                            .atZone(ZoneOffset.UTC)
                             .toLocalDate()
                     }
                     TaskManager.addTask(
