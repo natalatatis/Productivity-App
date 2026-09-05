@@ -17,6 +17,8 @@ import com.example.sp2.ui.screens.settings.SettingsScreen
 import com.example.sp2.ui.screens.tasks.TasksScreen
 import com.example.sp2.ui.screens.tasks.AddTaskScreen
 import com.example.sp2.ui.screens.tasks.TaskDetailScreen
+import com.example.sp2.ui.screens.notes.NotesScreen
+import com.example.sp2.ui.screens.notes.NotesViewModel
 
 // Controls the navigation between the main screens of the app
 @Composable
@@ -57,6 +59,15 @@ fun AppNavigation() {
                     },
                     onEditTask = { taskId ->
                         navController.navigate(Routes.taskDetail(taskId))
+                    }
+                )
+            }
+
+            // Notes
+            composable(Routes.ADD_NOTE) {
+                NotesScreen(
+                    onNoteSaved = {
+                        navController.popBackStack()
                     }
                 )
             }

@@ -84,4 +84,10 @@
     <string name="weekday_fri">Fri</string>
     <string name="weekday_sat">Sat</string>
     <string name="weekday_sun">Sun</string>
+
+    <!-- Notes -->
+    <string name="notes_title">Notes</string>
+    <string name="note_title">Title</string>
+    <string name="note_content_placeholder">Start writing...</string>
+    <string name="note_save">Save</string>
 </resources>

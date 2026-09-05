@@ -1,6 +1,7 @@
 package com.example.sp2.ui.components
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.CheckCircle
@@ -18,7 +19,6 @@ import androidx.compose.ui.res.stringResource
 import com.example.sp2.R
 
 // Represents an item in the bottom navigation bar
-// Each item has a name, route and icon
 data class BottomNavItem(
     val title: String,
     val route: String,
@@ -43,6 +43,11 @@ fun AppBottomBar(
             icon = Icons.Default.CheckCircle
         ),
         BottomNavItem(
+            title = "",
+            route = "add",
+            icon = Icons.Default.Add
+        ),
+        BottomNavItem(
             title = stringResource(R.string.nav_calendar),
             route = Routes.CALENDAR,
             icon = Icons.Default.DateRange
@@ -55,31 +60,27 @@ fun AppBottomBar(
     )
 
     // Gets the current navigation destination
-    // This allows the app to know which item is currently selected
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
     // Creates the bottom navigation bar
     NavigationBar {
 
-        // Creates one navigation item for each screen
         items.forEach { item ->
 
             NavigationBarItem(
-
-                // Highlights the item corresponding to the current screen
                 selected = currentRoute == item.route,
 
-                // Navigates to the selected screen when the item is clicked
                 onClick = {
-                    navController.navigate(item.route) {
-
-                        // Prevents creating duplicate instances of the same screen
-                        launchSingleTop = true
+                    if (item.route == "add") {
+                        navController.navigate(Routes.ADD_NOTE)
+                    } else {
+                        navController.navigate(item.route) {
+                            launchSingleTop = true
+                        }
                     }
                 },
 
-                // Displays the icon for the navigation item
                 icon = {
                     Icon(
                         imageVector = item.icon,
@@ -87,9 +88,10 @@ fun AppBottomBar(
                     )
                 },
 
-                // Displays the name below the icon
                 label = {
-                    Text(item.title)
+                    if (item.title.isNotEmpty()) {
+                        Text(item.title)
+                    }
                 }
             )
         }
