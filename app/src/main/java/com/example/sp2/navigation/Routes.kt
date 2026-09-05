@@ -10,6 +10,8 @@ object Routes {
     const val ADD_TASK = "add_task"
     const val ADD_NOTE = "add_note"
 
+    const val MY_STUFF = "my_stuff"
+
     // Route pattern used by the NavHost (includes the argument placeholder)
     const val TASK_DETAIL = "task_detail/{taskId}"
 

@@ -90,4 +90,22 @@
     <string name="note_title">Título</string>
     <string name="note_content_placeholder">Empieza a escribir...</string>
     <string name="note_save">Guardar</string>
+
+    <!-- My Stuff -->
+    <string name="my_stuff_title">Mis cosas</string>
+    <string name="my_stuff_tasks">Tareas</string>
+    <string name="my_stuff_notes">Notas</string>
+    <string name="nav_my_stuff">Mis cosas</string>
+
+    <!-- Notes -->
+    <string name="note_add">Agregar nota</string>
+    <string name="notes_empty_title">Aún no hay notas</string>
+
+    <!-- Create -->
+    <string name="create_title">Crear</string>
+    <string name="create_description">¿Qué quieres crear?</string>
+    <string name="create_note">Nueva nota</string>
+    <string name="create_note_description">Escribe algo</string>
+    <string name="create_task">Nueva tarea</string>
+    <string name="create_task_description">Agrega algo a tus tareas</string>
 </resources>

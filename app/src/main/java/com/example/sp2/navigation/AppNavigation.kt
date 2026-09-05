@@ -19,6 +19,7 @@ import com.example.sp2.ui.screens.tasks.AddTaskScreen
 import com.example.sp2.ui.screens.tasks.TaskDetailScreen
 import com.example.sp2.ui.screens.notes.NotesScreen
 import com.example.sp2.ui.screens.notes.NotesViewModel
+import com.example.sp2.ui.screens.mystuff.MyStuffScreen
 
 // Controls the navigation between the main screens of the app
 @Composable
@@ -59,6 +60,18 @@ fun AppNavigation() {
                     },
                     onEditTask = { taskId ->
                         navController.navigate(Routes.taskDetail(taskId))
+                    }
+                )
+            }
+
+            // My stuff
+            composable(Routes.MY_STUFF) {
+                MyStuffScreen(
+                    onAddTask = {
+                        navController.navigate(Routes.ADD_TASK)
+                    },
+                    onAddNote = {
+                        navController.navigate(Routes.ADD_NOTE)
                     }
                 )
             }
