@@ -32,13 +32,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sp2.R
-import com.example.sp2.data.TaskManager
 import com.example.sp2.model.Priority
 import com.example.sp2.model.ReminderFrequency
 import com.example.sp2.model.RepeatFrequency
 import java.time.Instant
-import java.time.LocalDate
 import java.time.ZoneOffset
 
 // Displays the screen for creating a new task
@@ -46,7 +45,8 @@ import java.time.ZoneOffset
 @Composable
 fun AddTaskScreen(
     onTaskAdded: () -> Unit,
-    onBack: () -> Unit = {}
+    onBack: () -> Unit = {},
+    taskViewModel: TaskViewModel = viewModel()
 ) {
 
     // Stores the task information entered by the user
@@ -70,7 +70,8 @@ fun AddTaskScreen(
         mutableStateOf(RepeatFrequency.NONE)
     }
 
-    // Stores the selected date as epoch millis so it survives configuration changes
+    // Stores the selected date as epoch millis
+    // so it survives configuration changes
     var selectedDateMillis by rememberSaveable {
         mutableStateOf<Long?>(null)
     }
@@ -241,15 +242,19 @@ fun AddTaskScreen(
                 }
             }
 
-            // Add Task Button
+            // Adds the task to Room
             Button(
                 onClick = {
+
+                    // Converts the selected date into LocalDate
                     val selectedDate = selectedDateMillis?.let { millis ->
                         Instant.ofEpochMilli(millis)
                             .atZone(ZoneOffset.UTC)
                             .toLocalDate()
                     }
-                    TaskManager.addTask(
+
+                    // Saves the task through the ViewModel
+                    taskViewModel.addTask(
                         title = title,
                         description = description,
                         priority = priority,
@@ -257,39 +262,60 @@ fun AddTaskScreen(
                         reminder = reminder,
                         repeat = repeat
                     )
+
+                    // Returns to the previous screen
                     onTaskAdded()
                 },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = title.isNotBlank()
             ) {
-                Text(text = stringResource(R.string.task_add))
+                Text(
+                    text = stringResource(R.string.task_add)
+                )
             }
         }
     }
 
+    // Date picker dialog
     if (showDatePicker) {
+
         val datePickerState = rememberDatePickerState()
+
         DatePickerDialog(
-            onDismissRequest = { showDatePicker = false },
+            onDismissRequest = {
+                showDatePicker = false
+            },
             confirmButton = {
+
                 Button(
                     onClick = {
-                        selectedDateMillis = datePickerState.selectedDateMillis
+                        selectedDateMillis =
+                            datePickerState.selectedDateMillis
+
                         showDatePicker = false
                     }
                 ) {
-                    Text(text = stringResource(R.string.action_confirm))
+                    Text(
+                        text = stringResource(R.string.action_confirm)
+                    )
                 }
             },
             dismissButton = {
+
                 OutlinedButton(
-                    onClick = { showDatePicker = false }
+                    onClick = {
+                        showDatePicker = false
+                    }
                 ) {
-                    Text(text = stringResource(R.string.action_cancel))
+                    Text(
+                        text = stringResource(R.string.action_cancel)
+                    )
                 }
             }
         ) {
-            DatePicker(state = datePickerState)
+            DatePicker(
+                state = datePickerState
+            )
         }
     }
 }
@@ -307,24 +333,46 @@ private fun priorityText(priority: Priority): String {
 
 // Returns the localized text for each reminder frequency
 @Composable
-private fun reminderText(reminder: ReminderFrequency): String {
+private fun reminderText(
+    reminder: ReminderFrequency
+): String {
     return when (reminder) {
-        ReminderFrequency.NONE -> stringResource(R.string.reminder_none)
-        ReminderFrequency.ONCE -> stringResource(R.string.reminder_once)
-        ReminderFrequency.DAILY -> stringResource(R.string.reminder_daily)
-        ReminderFrequency.WEEKLY -> stringResource(R.string.reminder_weekly)
-        ReminderFrequency.MONTHLY -> stringResource(R.string.reminder_monthly)
+        ReminderFrequency.NONE ->
+            stringResource(R.string.reminder_none)
+
+        ReminderFrequency.ONCE ->
+            stringResource(R.string.reminder_once)
+
+        ReminderFrequency.DAILY ->
+            stringResource(R.string.reminder_daily)
+
+        ReminderFrequency.WEEKLY ->
+            stringResource(R.string.reminder_weekly)
+
+        ReminderFrequency.MONTHLY ->
+            stringResource(R.string.reminder_monthly)
     }
 }
 
 // Returns the localized text for each repeat frequency
 @Composable
-private fun repeatText(repeat: RepeatFrequency): String {
+private fun repeatText(
+    repeat: RepeatFrequency
+): String {
     return when (repeat) {
-        RepeatFrequency.NONE -> stringResource(R.string.repeat_none)
-        RepeatFrequency.DAILY -> stringResource(R.string.repeat_daily)
-        RepeatFrequency.WEEKLY -> stringResource(R.string.repeat_weekly)
-        RepeatFrequency.MONTHLY -> stringResource(R.string.repeat_monthly)
-        RepeatFrequency.YEARLY -> stringResource(R.string.repeat_yearly)
+        RepeatFrequency.NONE ->
+            stringResource(R.string.repeat_none)
+
+        RepeatFrequency.DAILY ->
+            stringResource(R.string.repeat_daily)
+
+        RepeatFrequency.WEEKLY ->
+            stringResource(R.string.repeat_weekly)
+
+        RepeatFrequency.MONTHLY ->
+            stringResource(R.string.repeat_monthly)
+
+        RepeatFrequency.YEARLY ->
+            stringResource(R.string.repeat_yearly)
     }
 }

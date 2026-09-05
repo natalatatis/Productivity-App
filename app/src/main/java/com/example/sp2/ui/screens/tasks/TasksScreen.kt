@@ -24,13 +24,15 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sp2.R
-import com.example.sp2.data.TaskManager
 import com.example.sp2.model.Task
 import com.example.sp2.ui.components.EmptyState
 import com.example.sp2.ui.components.PriorityChip
@@ -40,11 +42,13 @@ import com.example.sp2.ui.components.SectionHeader
 @Composable
 fun TasksScreen(
     onAddTask: () -> Unit = {},
-    onEditTask: (Int) -> Unit = {}
+    onEditTask: (Int) -> Unit = {},
+    taskViewModel: TaskViewModel = viewModel()
 ) {
 
-    // Gets the current tasks
-    val tasks = TaskManager.tasks
+    // Observes the tasks stored in Room
+    // Updates the screen automatically when the database changes
+    val tasks by taskViewModel.tasks.collectAsState()
 
     Scaffold(
         // Button for adding a new task
@@ -103,8 +107,20 @@ fun TasksScreen(
                         // Displays each task
                         TaskRow(
                             task = task,
+
+                            // Opens the task editor
                             onEdit = {
                                 onEditTask(task.id)
+                            },
+
+                            // Changes the completed state
+                            onToggle = {
+                                taskViewModel.toggleTask(task)
+                            },
+
+                            // Deletes the task
+                            onDelete = {
+                                taskViewModel.deleteTask(task)
                             }
                         )
                     }
@@ -114,12 +130,13 @@ fun TasksScreen(
     }
 }
 
-// Displays an individual task row, using the same rounded/container
-// visual language as HabitStreakCard and the Home screen's task cards
+// Displays an individual task row
 @Composable
 private fun TaskRow(
     task: Task,
-    onEdit: () -> Unit
+    onEdit: () -> Unit,
+    onToggle: () -> Unit,
+    onDelete: () -> Unit
 ) {
 
     Surface(
@@ -139,7 +156,7 @@ private fun TaskRow(
             Checkbox(
                 checked = task.completed,
                 onCheckedChange = {
-                    TaskManager.toggleTask(task)
+                    onToggle()
                 }
             )
 
@@ -170,8 +187,10 @@ private fun TaskRow(
                     )
                 }
 
-                // Displays the task priority as a chip
-                PriorityChip(priority = task.priority)
+                // Displays the task priority
+                PriorityChip(
+                    priority = task.priority
+                )
             }
 
             // Button for editing the task
@@ -188,9 +207,7 @@ private fun TaskRow(
 
             // Button for deleting the task
             IconButton(
-                onClick = {
-                    TaskManager.deleteTask(task)
-                }
+                onClick = onDelete
             ) {
                 Icon(
                     imageVector = Icons.Default.Delete,

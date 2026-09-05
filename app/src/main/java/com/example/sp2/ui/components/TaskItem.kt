@@ -22,15 +22,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.example.sp2.R
-import com.example.sp2.data.TaskManager
 import com.example.sp2.model.Task
 
-// Displays an individual task, using the same rounded/container
-// visual language as HabitStreakCard and the rest of the app
+// Displays an individual task
 @Composable
 fun TaskItem(
     task: Task,
-    onEdit: () -> Unit
+    onEdit: () -> Unit,
+    onToggle: () -> Unit,
+    onDelete: () -> Unit
 ) {
 
     Surface(
@@ -51,10 +51,11 @@ fun TaskItem(
             Checkbox(
                 checked = task.completed,
                 onCheckedChange = {
-                    TaskManager.toggleTask(task)
+                    onToggle()
                 }
             )
 
+            // Displays the task information
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -82,8 +83,10 @@ fun TaskItem(
                     )
                 }
 
-                // Displays the task priority as a chip
-                PriorityChip(priority = task.priority)
+                // Displays the task priority
+                PriorityChip(
+                    priority = task.priority
+                )
             }
 
             // Button for editing the task
@@ -100,9 +103,7 @@ fun TaskItem(
 
             // Button for deleting the task
             IconButton(
-                onClick = {
-                    TaskManager.deleteTask(task)
-                }
+                onClick = onDelete
             ) {
                 Icon(
                     imageVector = Icons.Default.Delete,

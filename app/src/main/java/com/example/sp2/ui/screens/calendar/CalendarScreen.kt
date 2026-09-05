@@ -21,6 +21,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,11 +31,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sp2.R
 import com.example.sp2.data.LanguageManager
-import com.example.sp2.data.TaskManager
 import com.example.sp2.ui.components.EmptyState
 import com.example.sp2.ui.components.TaskItem
+import com.example.sp2.ui.screens.tasks.TaskViewModel
 import com.kizitonwose.calendar.compose.HorizontalCalendar
 import com.kizitonwose.calendar.compose.rememberCalendarState
 import com.kizitonwose.calendar.core.CalendarDay
@@ -48,7 +50,10 @@ import java.time.format.TextStyle
 import java.util.Locale
 
 @Composable
-fun CalendarScreen(onEditTask: (Int) -> Unit = {}) {
+fun CalendarScreen(
+    onEditTask: (Int) -> Unit = {},
+    taskViewModel: TaskViewModel = viewModel()
+) {
 
     val currentMonth = YearMonth.now()
 
@@ -63,14 +68,15 @@ fun CalendarScreen(onEditTask: (Int) -> Unit = {}) {
 
     val visibleMonth = calendarState.firstVisibleMonth.yearMonth
 
-    // Reads the language currently selected in the app, so the month
-    // name updates immediately when the user switches language
+    // Reads the language currently selected in the app
+    // so the month name updates when the language changes
     val language by LanguageManager.currentLanguage
 
-    // Gets the current tasks from the TaskManager
-    val tasks = TaskManager.tasks
+    // Observes the tasks stored in Room
+    // The calendar updates automatically when tasks change
+    val tasks by taskViewModel.tasks.collectAsState()
 
-    // Keeps track of the day the user tapped on the calendar
+    // Keeps track of the day selected by the user
     var selectedDate by remember {
         mutableStateOf<LocalDate?>(null)
     }
@@ -104,14 +110,16 @@ fun CalendarScreen(onEditTask: (Int) -> Unit = {}) {
                 )
             }
 
-            // Current visible month, using the app's selected language
+            // Current visible month
             Text(
-                text = (visibleMonth.month.getDisplayName(
-                    TextStyle.FULL,
-                    Locale(language)
-                ) + " " + visibleMonth.year).replaceFirstChar {
-                    it.titlecase()
-                },
+                text = (
+                        visibleMonth.month.getDisplayName(
+                            TextStyle.FULL,
+                            Locale(language)
+                        ) + " " + visibleMonth.year
+                        ).replaceFirstChar {
+                        it.titlecase()
+                    },
                 style = MaterialTheme.typography.headlineSmall
             )
 
@@ -162,12 +170,13 @@ fun CalendarScreen(onEditTask: (Int) -> Unit = {}) {
             }
         }
 
+        // Calendar
         HorizontalCalendar(
             state = calendarState,
 
             dayContent = { day ->
 
-                // Checks if this day has at least one task assigned
+                // Checks whether this day has at least one task
                 val hasTask = tasks.any {
                     it.date == day.date
                 }
@@ -187,8 +196,7 @@ fun CalendarScreen(onEditTask: (Int) -> Unit = {}) {
             modifier = Modifier.height(24.dp)
         )
 
-        // Section below the calendar: shows tasks for the selected day,
-        // or a message if no day has been selected
+        // Section below the calendar
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -197,11 +205,13 @@ fun CalendarScreen(onEditTask: (Int) -> Unit = {}) {
 
             val currentSelectedDate = selectedDate
 
+            // Shows a message if no day is selected
             if (currentSelectedDate == null) {
 
                 Column(
                     modifier = Modifier.align(Alignment.Center)
                 ) {
+
                     EmptyState(
                         title = stringResource(
                             R.string.calendar_no_date_selected
@@ -211,6 +221,7 @@ fun CalendarScreen(onEditTask: (Int) -> Unit = {}) {
 
             } else {
 
+                // Gets the tasks assigned to the selected day
                 val tasksForDay = tasks.filter {
                     it.date == currentSelectedDate
                 }
@@ -219,7 +230,7 @@ fun CalendarScreen(onEditTask: (Int) -> Unit = {}) {
                     modifier = Modifier.fillMaxSize()
                 ) {
 
-                    // Shows the selected date as a readable header
+                    // Selected date header
                     Text(
                         text = currentSelectedDate.format(
                             DateTimeFormatter.ofPattern("dd/MM/yyyy")
@@ -231,6 +242,7 @@ fun CalendarScreen(onEditTask: (Int) -> Unit = {}) {
                         modifier = Modifier.height(12.dp)
                     )
 
+                    // Shows a message if the selected day has no tasks
                     if (tasksForDay.isEmpty()) {
 
                         EmptyState(
@@ -241,6 +253,7 @@ fun CalendarScreen(onEditTask: (Int) -> Unit = {}) {
 
                     } else {
 
+                        // Displays the tasks for the selected day
                         LazyColumn(
                             contentPadding = PaddingValues(bottom = 20.dp),
                             verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -253,8 +266,20 @@ fun CalendarScreen(onEditTask: (Int) -> Unit = {}) {
 
                                 TaskItem(
                                     task = task,
+
+                                    // Opens the task editor
                                     onEdit = {
                                         onEditTask(task.id)
+                                    },
+
+                                    // Changes the completed state in Room
+                                    onToggle = {
+                                        taskViewModel.toggleTask(task)
+                                    },
+
+                                    // Deletes the task from Room
+                                    onDelete = {
+                                        taskViewModel.deleteTask(task)
                                     }
                                 )
                             }
@@ -274,7 +299,8 @@ fun CalendarDayContent(
     onClick: () -> Unit
 ) {
 
-    val isCurrentMonth = day.position == DayPosition.MonthDate
+    val isCurrentMonth =
+        day.position == DayPosition.MonthDate
 
     Box(
         modifier = Modifier
@@ -290,6 +316,7 @@ fun CalendarDayContent(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
+            // Calendar day number
             Box(
                 modifier = Modifier
                     .size(32.dp)
@@ -308,14 +335,21 @@ fun CalendarDayContent(
                     text = day.date.dayOfMonth.toString(),
                     style = MaterialTheme.typography.bodyMedium,
                     color = when {
-                        isSelected -> MaterialTheme.colorScheme.onPrimary
-                        !isCurrentMonth -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
-                        else -> MaterialTheme.colorScheme.onSurface
+                        isSelected ->
+                            MaterialTheme.colorScheme.onPrimary
+
+                        !isCurrentMonth ->
+                            MaterialTheme.colorScheme.onSurface.copy(
+                                alpha = 0.3f
+                            )
+
+                        else ->
+                            MaterialTheme.colorScheme.onSurface
                     }
                 )
             }
 
-            // Small dot shown under days that have at least one task
+            // Small dot shown under days that have a task
             Box(
                 modifier = Modifier
                     .padding(top = 2.dp)
