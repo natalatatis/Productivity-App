@@ -26,6 +26,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,29 +35,35 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sp2.R
-import com.example.sp2.data.TaskManager
 import com.example.sp2.model.Task
 import com.example.sp2.ui.components.EmptyState
 import com.example.sp2.ui.components.HabitStreakCard
 import com.example.sp2.ui.components.PriorityChip
 import com.example.sp2.ui.components.SectionHeader
+import com.example.sp2.ui.screens.tasks.TaskViewModel
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @Composable
 fun HomeScreen(
-    onEditTask: (Int) -> Unit = {}
+    onEditTask: (Int) -> Unit = {},
+    taskViewModel: TaskViewModel = viewModel()
 ) {
 
-    // Gets the current tasks from the TaskManager
-    val tasks = TaskManager.tasks
+    // Observes the tasks stored in Room
+    val tasks by taskViewModel.tasks.collectAsState()
 
-    // Only displays tasks that have not been completed
-    val activeTasks = tasks.filter {
-        !it.completed
+    // Gets today's date
+    val today = LocalDate.now()
+
+    // Only displays today's incomplete tasks
+    val todayTasks = tasks.filter {
+        it.date == today && !it.completed
     }
 
-    // Keeps track of which task is currently expanded (only one at a time)
+    // Keeps track of which task is currently expanded
     var expandedTaskId by remember {
         mutableStateOf<Int?>(null)
     }
@@ -87,8 +94,8 @@ fun HomeScreen(
             )
         }
 
-        // Dynamic tasks
-        if (activeTasks.isEmpty()) {
+        // Shows a message when there are no tasks for today
+        if (todayTasks.isEmpty()) {
 
             item {
                 EmptyState(
@@ -99,14 +106,17 @@ fun HomeScreen(
 
         } else {
 
+            // Displays today's tasks
             items(
-                items = activeTasks,
+                items = todayTasks,
                 key = { it.id }
             ) { task ->
 
                 TaskCard(
                     task = task,
                     isExpanded = expandedTaskId == task.id,
+
+                    // Expands or collapses the task card
                     onToggleExpand = {
                         expandedTaskId = if (expandedTaskId == task.id) {
                             null
@@ -114,14 +124,20 @@ fun HomeScreen(
                             task.id
                         }
                     },
+
+                    // Opens the task editor
                     onEdit = {
                         onEditTask(task.id)
                     },
+
+                    // Deletes the task from Room
                     onDelete = {
-                        TaskManager.deleteTask(task)
+                        taskViewModel.deleteTask(task)
                     },
+
+                    // Marks the task as complete or incomplete
                     onToggleComplete = {
-                        TaskManager.toggleTask(task)
+                        taskViewModel.toggleTask(task)
                     }
                 )
             }
@@ -140,14 +156,14 @@ private fun TaskCard(
     onToggleComplete: () -> Unit
 ) {
 
-    // Controls the visibility of the edit/delete menu shown on long press
+    // Controls the visibility of the edit/delete menu
     var showMenu by remember {
         mutableStateOf(false)
     }
 
     Box {
 
-        // Rounded, container-colored surface matching HabitStreakCard's language
+        // Rounded task card
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
@@ -158,7 +174,9 @@ private fun TaskCard(
                     }
                 ),
             shape = RoundedCornerShape(20.dp),
-            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(
+                alpha = 0.4f
+            )
         ) {
 
             Column(
@@ -171,7 +189,7 @@ private fun TaskCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
 
-                    // Marks the task as already completed
+                    // Marks the task as completed
                     IconButton(
                         onClick = onToggleComplete
                     ) {
@@ -188,6 +206,7 @@ private fun TaskCard(
                         )
                     }
 
+                    // Task title
                     Text(
                         text = task.title,
                         style = MaterialTheme.typography.titleMedium,
@@ -195,14 +214,16 @@ private fun TaskCard(
                     )
                 }
 
-                // Priority chip, always visible (compact, matches the new rounded style)
+                // Task priority
                 Row(
                     modifier = Modifier.padding(start = 48.dp)
                 ) {
-                    PriorityChip(priority = task.priority)
+                    PriorityChip(
+                        priority = task.priority
+                    )
                 }
 
-                // Extra details, only shown when the task is expanded
+                // Extra task information
                 if (isExpanded) {
 
                     Column(
@@ -210,6 +231,7 @@ private fun TaskCard(
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
 
+                        // Description
                         if (task.description.isNotEmpty()) {
                             Text(
                                 text = task.description,
@@ -217,6 +239,7 @@ private fun TaskCard(
                             )
                         }
 
+                        // Date and time
                         if (task.date != null || task.time != null) {
 
                             val dateText = task.date?.format(
@@ -246,12 +269,18 @@ private fun TaskCard(
             }
         ) {
 
+            // Edit option
             DropdownMenuItem(
                 text = {
-                    Text(stringResource(R.string.task_edit))
+                    Text(
+                        stringResource(R.string.task_edit)
+                    )
                 },
                 leadingIcon = {
-                    Icon(Icons.Default.Edit, contentDescription = null)
+                    Icon(
+                        Icons.Default.Edit,
+                        contentDescription = null
+                    )
                 },
                 onClick = {
                     showMenu = false
@@ -259,12 +288,18 @@ private fun TaskCard(
                 }
             )
 
+            // Delete option
             DropdownMenuItem(
                 text = {
-                    Text(stringResource(R.string.task_delete))
+                    Text(
+                        stringResource(R.string.task_delete)
+                    )
                 },
                 leadingIcon = {
-                    Icon(Icons.Default.Delete, contentDescription = null)
+                    Icon(
+                        Icons.Default.Delete,
+                        contentDescription = null
+                    )
                 },
                 onClick = {
                     showMenu = false
