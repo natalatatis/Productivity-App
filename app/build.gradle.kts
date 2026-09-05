@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -61,4 +62,7 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.9.3")
     implementation("com.kizitonwose.calendar:compose:2.6.2")
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
+    implementation(platform("com.google.firebase:firebase-bom:34.18.0"))
+    implementation("com.google.firebase:firebase-analytics")
+
 }
