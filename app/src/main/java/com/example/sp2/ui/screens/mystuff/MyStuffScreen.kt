@@ -23,8 +23,10 @@ import com.example.sp2.ui.screens.tasks.TasksScreen
 fun MyStuffScreen(
     onAddTask: () -> Unit = {},
     onAddNote: () -> Unit = {},
-    onEditTask: (Int) -> Unit = {}
+    onEditTask: (Int) -> Unit = {},
+    onOpenNote: (Int) -> Unit = {}
 ) {
+
     var selectedTab by remember {
         mutableIntStateOf(0)
     }
@@ -32,6 +34,7 @@ fun MyStuffScreen(
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
+
         // Screen title
         Text(
             text = stringResource(R.string.my_stuff_title),
@@ -46,32 +49,49 @@ fun MyStuffScreen(
         TabRow(
             selectedTabIndex = selectedTab
         ) {
+
             Tab(
                 selected = selectedTab == 0,
-                onClick = { selectedTab = 0 },
+                onClick = {
+                    selectedTab = 0
+                },
                 text = {
-                    Text(stringResource(R.string.my_stuff_tasks))
+                    Text(
+                        stringResource(
+                            R.string.my_stuff_tasks
+                        )
+                    )
                 }
             )
 
             Tab(
                 selected = selectedTab == 1,
-                onClick = { selectedTab = 1 },
+                onClick = {
+                    selectedTab = 1
+                },
                 text = {
-                    Text(stringResource(R.string.my_stuff_notes))
+                    Text(
+                        stringResource(
+                            R.string.my_stuff_notes
+                        )
+                    )
                 }
             )
         }
 
         // Selected content
         when (selectedTab) {
+
+            // Tasks tab
             0 -> TasksScreen(
                 onAddTask = onAddTask,
                 onEditTask = onEditTask
             )
 
+            // Notes tab
             1 -> NotesListScreen(
-                onAddNote = onAddNote
+                onAddNote = onAddNote,
+                onOpenNote = onOpenNote
             )
         }
     }

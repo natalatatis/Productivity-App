@@ -16,6 +16,10 @@ interface NoteDao {
     @Query("SELECT * FROM notes ORDER BY id DESC")
     fun getAllNotes(): Flow<List<NoteEntity>>
 
+    // Gets a specific note
+    @Query("SELECT * FROM notes WHERE id = :noteId LIMIT 1")
+    suspend fun getNoteById(noteId: Int): NoteEntity?
+
     // Adds a note
     @Insert
     suspend fun insertNote(note: NoteEntity): Long

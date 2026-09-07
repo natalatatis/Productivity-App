@@ -17,4 +17,11 @@ object Routes {
 
     // Builds the actual navigable route for a specific task
     fun taskDetail(taskId: Int) = "task_detail/$taskId"
+
+    // Notes routes
+    const val NOTE_DETAIL = "note/{noteId}"
+
+    fun noteDetail(noteId: Int): String {
+        return "note/$noteId"
+    }
 }

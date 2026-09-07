@@ -8,13 +8,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -27,24 +27,33 @@ import com.example.sp2.R
 @Composable
 fun NotesListScreen(
     onAddNote: () -> Unit,
+    onOpenNote: (Int) -> Unit,
     viewModel: NotesViewModel = viewModel()
 ) {
+
+    // Observes the notes stored in Room
     val notes by viewModel.notes.collectAsState()
 
     Scaffold(
         floatingActionButton = {
+
+            // Creates a new note
             FloatingActionButton(
                 onClick = onAddNote
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = stringResource(R.string.note_add)
+                    contentDescription = stringResource(
+                        R.string.note_add
+                    )
                 )
             }
         }
     ) { paddingValues ->
 
+        // Empty state
         if (notes.isEmpty()) {
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -52,11 +61,17 @@ fun NotesListScreen(
                     .padding(20.dp),
                 verticalArrangement = Arrangement.Center
             ) {
+
                 Text(
-                    text = stringResource(R.string.notes_empty_title)
+                    text = stringResource(
+                        R.string.notes_empty_title
+                    )
                 )
             }
+
         } else {
+
+            // Displays saved notes
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
@@ -64,6 +79,7 @@ fun NotesListScreen(
                     .padding(20.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+
                 items(
                     items = notes,
                     key = { it.id }
@@ -73,24 +89,34 @@ fun NotesListScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable {
-                                // Open note later
+
+                                // Opens the selected note
+                                onOpenNote(note.id)
                             }
                     ) {
+
                         Column(
                             modifier = Modifier.padding(16.dp)
                         ) {
+
+                            // Note title
                             Text(
                                 text = note.title
                             )
 
+                            // Note date
                             Text(
                                 text = note.date
                             )
 
+                            // Note preview
                             if (note.content.isNotBlank()) {
+
                                 Text(
                                     text = note.content,
-                                    modifier = Modifier.padding(top = 8.dp)
+                                    modifier = Modifier.padding(
+                                        top = 8.dp
+                                    )
                                 )
                             }
                         }

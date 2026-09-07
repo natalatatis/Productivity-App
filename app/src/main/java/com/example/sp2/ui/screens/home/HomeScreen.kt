@@ -39,6 +39,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sp2.R
 import com.example.sp2.model.Task
 import com.example.sp2.ui.components.EmptyState
+import com.example.sp2.ui.components.HabitProgressCard
 import com.example.sp2.ui.components.HabitStreakCard
 import com.example.sp2.ui.components.PriorityChip
 import com.example.sp2.ui.components.SectionHeader
@@ -63,6 +64,49 @@ fun HomeScreen(
         it.date == today && !it.completed
     }
 
+    // Temporary weekly habit data
+    var exerciseDays by remember {
+        mutableStateOf(
+            listOf(
+                true,
+                true,
+                false,
+                true,
+                false,
+                false,
+                false
+            )
+        )
+    }
+
+    var readingDays by remember {
+        mutableStateOf(
+            listOf(
+                true,
+                true,
+                true,
+                false,
+                true,
+                false,
+                false
+            )
+        )
+    }
+
+    var walkingDays by remember {
+        mutableStateOf(
+            listOf(
+                false,
+                true,
+                true,
+                true,
+                false,
+                false,
+                false
+            )
+        )
+    }
+
     // Keeps track of which task is currently expanded
     var expandedTaskId by remember {
         mutableStateOf<Int?>(null)
@@ -82,9 +126,77 @@ fun HomeScreen(
             )
         }
 
-        // Streak
+        // General streak
         item {
-            HabitStreakCard(streak = 7)
+            HabitStreakCard(
+                streak = 7
+            )
+        }
+
+        // Habits section
+        item {
+            SectionHeader(
+                title = "Habits"
+            )
+        }
+
+        // Weekly habit progress
+        item {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+
+                HabitProgressCard(
+                    name = "Exercise",
+                    completedDays = exerciseDays,
+                    onClick = {
+
+                        // Temporary behavior:
+                        // toggles the last day in the week
+                        exerciseDays =
+                            exerciseDays.toMutableList().also {
+                                val lastIndex = it.lastIndex
+
+                                it[lastIndex] =
+                                    !it[lastIndex]
+                            }
+                    }
+                )
+
+                HabitProgressCard(
+                    name = "Read",
+                    completedDays = readingDays,
+                    onClick = {
+
+                        // Temporary behavior:
+                        // toggles the last day in the week
+                        readingDays =
+                            readingDays.toMutableList().also {
+                                val lastIndex = it.lastIndex
+
+                                it[lastIndex] =
+                                    !it[lastIndex]
+                            }
+                    }
+                )
+
+                HabitProgressCard(
+                    name = "Walk",
+                    completedDays = walkingDays,
+                    onClick = {
+
+                        // Temporary behavior:
+                        // toggles the last day in the week
+                        walkingDays =
+                            walkingDays.toMutableList().also {
+                                val lastIndex = it.lastIndex
+
+                                it[lastIndex] =
+                                    !it[lastIndex]
+                            }
+                    }
+                )
+            }
         }
 
         // Today's tasks section
@@ -99,8 +211,12 @@ fun HomeScreen(
 
             item {
                 EmptyState(
-                    title = stringResource(R.string.tasks_empty_title),
-                    description = stringResource(R.string.tasks_empty_description)
+                    title = stringResource(
+                        R.string.tasks_empty_title
+                    ),
+                    description = stringResource(
+                        R.string.tasks_empty_description
+                    )
                 )
             }
 
@@ -118,11 +234,12 @@ fun HomeScreen(
 
                     // Expands or collapses the task card
                     onToggleExpand = {
-                        expandedTaskId = if (expandedTaskId == task.id) {
-                            null
-                        } else {
-                            task.id
-                        }
+                        expandedTaskId =
+                            if (expandedTaskId == task.id) {
+                                null
+                            } else {
+                                task.id
+                            }
                     },
 
                     // Opens the task editor
@@ -135,7 +252,7 @@ fun HomeScreen(
                         taskViewModel.deleteTask(task)
                     },
 
-                    // Marks the task as complete or incomplete
+                    // Marks the task as complete
                     onToggleComplete = {
                         taskViewModel.toggleTask(task)
                     }
@@ -216,7 +333,9 @@ private fun TaskCard(
 
                 // Task priority
                 Row(
-                    modifier = Modifier.padding(start = 48.dp)
+                    modifier = Modifier.padding(
+                        start = 48.dp
+                    )
                 ) {
                     PriorityChip(
                         priority = task.priority
@@ -227,8 +346,12 @@ private fun TaskCard(
                 if (isExpanded) {
 
                     Column(
-                        modifier = Modifier.padding(start = 48.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                        modifier = Modifier.padding(
+                            start = 48.dp
+                        ),
+                        verticalArrangement = Arrangement.spacedBy(
+                            4.dp
+                        )
                     ) {
 
                         // Description
@@ -240,15 +363,24 @@ private fun TaskCard(
                         }
 
                         // Date and time
-                        if (task.date != null || task.time != null) {
+                        if (
+                            task.date != null ||
+                            task.time != null
+                        ) {
 
-                            val dateText = task.date?.format(
-                                DateTimeFormatter.ofPattern("dd/MM/yyyy")
-                            ) ?: ""
+                            val dateText =
+                                task.date?.format(
+                                    DateTimeFormatter.ofPattern(
+                                        "dd/MM/yyyy"
+                                    )
+                                ) ?: ""
 
-                            val timeText = task.time?.format(
-                                DateTimeFormatter.ofPattern("HH:mm")
-                            ) ?: ""
+                            val timeText =
+                                task.time?.format(
+                                    DateTimeFormatter.ofPattern(
+                                        "HH:mm"
+                                    )
+                                ) ?: ""
 
                             Text(
                                 text = "$dateText $timeText".trim(),
@@ -273,7 +405,9 @@ private fun TaskCard(
             DropdownMenuItem(
                 text = {
                     Text(
-                        stringResource(R.string.task_edit)
+                        stringResource(
+                            R.string.task_edit
+                        )
                     )
                 },
                 leadingIcon = {
@@ -292,7 +426,9 @@ private fun TaskCard(
             DropdownMenuItem(
                 text = {
                     Text(
-                        stringResource(R.string.task_delete)
+                        stringResource(
+                            R.string.task_delete
+                        )
                     )
                 },
                 leadingIcon = {

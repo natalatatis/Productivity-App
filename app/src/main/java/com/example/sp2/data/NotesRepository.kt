@@ -18,12 +18,19 @@ class NotesRepository(
             entities.map { it.toNote() }
         }
 
-    // Adds a note
-    suspend fun addNote(note: Note) {
-        noteDao.insertNote(
+    // Gets one note
+    suspend fun getNoteById(noteId: Int): Note? {
+        return noteDao.getNoteById(noteId)?.toNote()
+    }
+
+    // Adds a note and returns its generated ID
+    suspend fun addNote(note: Note): Long {
+        return noteDao.insertNote(
             note.copy(id = 0).toEntity()
         )
     }
+
+
 
     // Updates a note
     suspend fun updateNote(note: Note) {
