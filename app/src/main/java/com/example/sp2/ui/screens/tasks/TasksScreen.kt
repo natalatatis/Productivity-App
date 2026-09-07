@@ -1,6 +1,9 @@
 package com.example.sp2.ui.screens.tasks
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,9 +19,10 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -26,6 +30,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -47,17 +54,13 @@ fun TasksScreen(
 ) {
 
     // Observes the tasks stored in Room
-    // Updates the screen automatically when the database changes
     val tasks by taskViewModel.tasks.collectAsState()
 
     Scaffold(
-        // Button for adding a new task
         floatingActionButton = {
-
             FloatingActionButton(
                 onClick = onAddTask
             ) {
-
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = stringResource(
@@ -84,17 +87,17 @@ fun TasksScreen(
                 modifier = Modifier.height(16.dp)
             )
 
-            // Shows a message when there are no tasks
             if (tasks.isEmpty()) {
 
                 EmptyState(
                     title = stringResource(R.string.tasks_empty_title),
-                    description = stringResource(R.string.tasks_empty_description)
+                    description = stringResource(
+                        R.string.tasks_empty_description
+                    )
                 )
 
             } else {
 
-                // Displays the list of tasks
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
@@ -104,21 +107,17 @@ fun TasksScreen(
                         key = { it.id }
                     ) { task ->
 
-                        // Displays each task
                         TaskRow(
                             task = task,
 
-                            // Opens the task editor
                             onEdit = {
                                 onEditTask(task.id)
                             },
 
-                            // Changes the completed state
                             onToggle = {
                                 taskViewModel.toggleTask(task)
                             },
 
-                            // Deletes the task
                             onDelete = {
                                 taskViewModel.deleteTask(task)
                             }
@@ -131,6 +130,7 @@ fun TasksScreen(
 }
 
 // Displays an individual task row
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun TaskRow(
     task: Task,
@@ -139,83 +139,128 @@ private fun TaskRow(
     onDelete: () -> Unit
 ) {
 
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
-    ) {
+    // Controls the long-press menu
+    var showMenu by remember {
+        mutableStateOf(false)
+    }
 
-        Row(
+    Box {
+
+        Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .combinedClickable(
+                    onClick = {
+                        // Normal click can later open task details if wanted
+                    },
+                    onLongClick = {
+                        showMenu = true
+                    }
+                ),
+            shape = RoundedCornerShape(20.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(
+                alpha = 0.4f
+            )
         ) {
 
-            // Marks the task as completed or incomplete
-            Checkbox(
-                checked = task.completed,
-                onCheckedChange = {
-                    onToggle()
-                }
-            )
-
-            Column(
+            Row(
                 modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
+                    .fillMaxWidth()
+                    .padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
 
-                // Displays the task title
-                Text(
-                    text = task.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    textDecoration = if (task.completed) {
-                        TextDecoration.LineThrough
-                    } else {
-                        TextDecoration.None
+                // Marks the task as completed or incomplete
+                Checkbox(
+                    checked = task.completed,
+                    onCheckedChange = {
+                        onToggle()
                     }
                 )
 
-                // Displays the description if one exists
-                if (task.description.isNotBlank()) {
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(horizontal = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
 
+                    // Task title
                     Text(
-                        text = task.description,
-                        style = MaterialTheme.typography.bodyMedium
+                        text = task.title,
+                        style = MaterialTheme.typography.titleMedium,
+                        textDecoration = if (task.completed) {
+                            TextDecoration.LineThrough
+                        } else {
+                            TextDecoration.None
+                        }
+                    )
+
+                    // Task description
+                    if (task.description.isNotBlank()) {
+                        Text(
+                            text = task.description,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+
+                    // Task priority
+                    PriorityChip(
+                        priority = task.priority
                     )
                 }
-
-                // Displays the task priority
-                PriorityChip(
-                    priority = task.priority
-                )
             }
+        }
 
-            // Button for editing the task
-            IconButton(
-                onClick = onEdit
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = stringResource(
-                        R.string.task_edit
+        // Menu shown after long pressing the task
+        DropdownMenu(
+            expanded = showMenu,
+            onDismissRequest = {
+                showMenu = false
+            }
+        ) {
+
+            // Edit option
+            DropdownMenuItem(
+                text = {
+                    Text(
+                        stringResource(
+                            R.string.task_edit
+                        )
                     )
-                )
-            }
-
-            // Button for deleting the task
-            IconButton(
-                onClick = onDelete
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = stringResource(
-                        R.string.task_delete
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = null
                     )
-                )
-            }
+                },
+                onClick = {
+                    showMenu = false
+                    onEdit()
+                }
+            )
+
+            // Delete option
+            DropdownMenuItem(
+                text = {
+                    Text(
+                        stringResource(
+                            R.string.task_delete
+                        )
+                    )
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = null
+                    )
+                },
+                onClick = {
+                    showMenu = false
+                    onDelete()
+                }
+            )
         }
     }
 }

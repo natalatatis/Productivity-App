@@ -100,6 +100,8 @@
     <!-- Notes -->
     <string name="note_add">Agregar nota</string>
     <string name="notes_empty_title">Aún no hay notas</string>
+    <string name="note_delete">Eliminar nota</string>
+    <string name="note_delete_description">Eliminar esta nota</string>
 
     <!-- Create -->
     <string name="create_title">Crear</string>
