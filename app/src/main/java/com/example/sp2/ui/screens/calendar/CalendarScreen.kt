@@ -48,6 +48,7 @@ import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
+import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun CalendarScreen(
@@ -70,7 +71,9 @@ fun CalendarScreen(
 
     // Reads the language currently selected in the app
     // so the month name updates when the language changes
-    val language by LanguageManager.currentLanguage
+    // Gets the language currently selected in the app
+    val context = LocalContext.current
+    val language = LanguageManager.getSavedLanguage(context)
 
     // Observes the tasks stored in Room
     // The calendar updates automatically when tasks change
