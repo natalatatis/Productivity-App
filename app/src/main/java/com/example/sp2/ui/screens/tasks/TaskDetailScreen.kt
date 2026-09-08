@@ -1,6 +1,7 @@
 package com.example.sp2.ui.screens.tasks
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,6 +15,8 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -37,8 +40,8 @@ import com.example.sp2.model.Priority
 import com.example.sp2.model.ReminderFrequency
 import com.example.sp2.model.RepeatFrequency
 import com.example.sp2.model.Task
+import com.example.sp2.model.TaskList
 import java.time.Instant
-import java.time.LocalDate
 import java.time.ZoneOffset
 
 // Displays the screen for editing an existing task
@@ -46,18 +49,42 @@ import java.time.ZoneOffset
 @Composable
 fun TaskDetailScreen(
     task: Task,
+    taskLists: List<TaskList>,
     onSave: (Task) -> Unit,
     onDelete: () -> Unit,
     onBack: () -> Unit
 ) {
 
-    var title by remember { mutableStateOf(task.title) }
-    var description by remember { mutableStateOf(task.description) }
-    var priority by remember { mutableStateOf(task.priority) }
-    var reminder by remember { mutableStateOf(task.reminder) }
-    var repeat by remember { mutableStateOf(task.repeat) }
+    var title by remember {
+        mutableStateOf(task.title)
+    }
 
-    // Pre-fills the date picker with the task's current date, if it has one
+    var description by remember {
+        mutableStateOf(task.description)
+    }
+
+    var priority by remember {
+        mutableStateOf(task.priority)
+    }
+
+    var reminder by remember {
+        mutableStateOf(task.reminder)
+    }
+
+    var repeat by remember {
+        mutableStateOf(task.repeat)
+    }
+
+    // Current task list
+    var selectedListId by remember {
+        mutableStateOf(task.listId)
+    }
+
+    var showListMenu by remember {
+        mutableStateOf(false)
+    }
+
+    // Current date
     var selectedDateMillis by remember {
         mutableStateOf(
             task.date
@@ -75,22 +102,36 @@ fun TaskDetailScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(text = stringResource(R.string.task_edit_title))
+                    Text(
+                        text = stringResource(
+                            R.string.task_edit_title
+                        )
+                    )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(
+                        onClick = onBack
+                    ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.nav_back)
+                            imageVector =
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription =
+                                stringResource(R.string.nav_back)
                         )
                     }
                 },
                 actions = {
-                    // Button for deleting the task directly from this screen
-                    IconButton(onClick = onDelete) {
+
+                    IconButton(
+                        onClick = onDelete
+                    ) {
                         Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = stringResource(R.string.task_delete)
+                            imageVector =
+                                Icons.Default.Delete,
+                            contentDescription =
+                                stringResource(
+                                    R.string.task_delete
+                                )
                         )
                     }
                 }
@@ -104,104 +145,240 @@ fun TaskDetailScreen(
                 .padding(paddingValues)
                 .padding(20.dp)
                 .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement =
+                Arrangement.spacedBy(16.dp)
         ) {
 
             OutlinedTextField(
                 value = title,
-                onValueChange = { title = it },
-                label = { Text(stringResource(R.string.task_title)) },
+                onValueChange = {
+                    title = it
+                },
+                label = {
+                    Text(
+                        stringResource(
+                            R.string.task_title
+                        )
+                    )
+                },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
 
             OutlinedTextField(
                 value = description,
-                onValueChange = { description = it },
-                label = { Text(stringResource(R.string.task_description)) },
+                onValueChange = {
+                    description = it
+                },
+                label = {
+                    Text(
+                        stringResource(
+                            R.string.task_description
+                        )
+                    )
+                },
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Text(text = stringResource(R.string.task_priority))
+            // List selection
+            Text(
+                text = stringResource(R.string.task_list)
+            )
 
-            Priority.values().forEach { option ->
-                Row(modifier = Modifier.fillMaxWidth()) {
-                    RadioButton(
-                        selected = priority == option,
-                        onClick = { priority = option }
-                    )
-                    Text(
-                        text = priorityText(option),
-                        modifier = Modifier.padding(top = 12.dp)
-                    )
-                }
-            }
-
-            Text(text = stringResource(R.string.task_date))
-
-            OutlinedButton(
-                onClick = { showDatePicker = true },
+            Box(
                 modifier = Modifier.fillMaxWidth()
             ) {
 
-                val selectedDate = selectedDateMillis?.let { millis ->
-                    Instant.ofEpochMilli(millis)
-                        .atZone(ZoneOffset.UTC)
-                        .toLocalDate()
+                val selectedListName =
+                    taskLists.find {
+                        it.id == selectedListId
+                    }?.name
+                        ?: stringResource(
+                            R.string.task_no_list
+                        )
+
+                OutlinedButton(
+                    onClick = {
+                        showListMenu = true
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = selectedListName
+                    )
                 }
 
-                Text(
-                    text = selectedDate?.toString()
-                        ?: stringResource(R.string.task_select_date)
+                DropdownMenu(
+                    expanded = showListMenu,
+                    onDismissRequest = {
+                        showListMenu = false
+                    }
+                ) {
+
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                stringResource(
+                                    R.string.task_no_list
+                                )
+                            )
+                        },
+                        onClick = {
+                            selectedListId = null
+                            showListMenu = false
+                        }
+                    )
+
+                    taskLists.forEach { taskList ->
+
+                        DropdownMenuItem(
+                            text = {
+                                Text(taskList.name)
+                            },
+                            onClick = {
+                                selectedListId =
+                                    taskList.id
+
+                                showListMenu = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            // Priority
+            Text(
+                text = stringResource(
+                    R.string.task_priority
                 )
-            }
+            )
 
-            Text(text = stringResource(R.string.task_reminder))
+            Priority.values().forEach { option ->
 
-            ReminderFrequency.values().forEach { option ->
-                Row(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+
                     RadioButton(
-                        selected = reminder == option,
-                        onClick = { reminder = option }
+                        selected = priority == option,
+                        onClick = {
+                            priority = option
+                        }
                     )
+
                     Text(
-                        text = reminderText(option),
-                        modifier = Modifier.padding(top = 12.dp)
+                        text = priorityText(option),
+                        modifier =
+                            Modifier.padding(top = 12.dp)
                     )
                 }
             }
 
-            Text(text = stringResource(R.string.task_repeat))
+            // Date
+            Text(
+                text = stringResource(
+                    R.string.task_date
+                )
+            )
 
-            RepeatFrequency.values().forEach { option ->
-                Row(modifier = Modifier.fillMaxWidth()) {
-                    RadioButton(
-                        selected = repeat == option,
-                        onClick = { repeat = option }
-                    )
-                    Text(
-                        text = repeatText(option),
-                        modifier = Modifier.padding(top = 12.dp)
-                    )
-                }
-            }
-
-            // Saves the changes when pressed
-            Button(
+            OutlinedButton(
                 onClick = {
+                    showDatePicker = true
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
 
-                    val selectedDate = selectedDateMillis?.let { millis ->
+                val selectedDate =
+                    selectedDateMillis?.let { millis ->
                         Instant.ofEpochMilli(millis)
                             .atZone(ZoneOffset.UTC)
                             .toLocalDate()
                     }
 
+                Text(
+                    text =
+                        selectedDate?.toString()
+                            ?: stringResource(
+                                R.string.task_select_date
+                            )
+                )
+            }
+
+            // Reminder
+            Text(
+                text = stringResource(
+                    R.string.task_reminder
+                )
+            )
+
+            ReminderFrequency.values().forEach { option ->
+
+                Row(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+
+                    RadioButton(
+                        selected = reminder == option,
+                        onClick = {
+                            reminder = option
+                        }
+                    )
+
+                    Text(
+                        text = reminderText(option),
+                        modifier =
+                            Modifier.padding(top = 12.dp)
+                    )
+                }
+            }
+
+            // Repeat
+            Text(
+                text = stringResource(
+                    R.string.task_repeat
+                )
+            )
+
+            RepeatFrequency.values().forEach { option ->
+
+                Row(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+
+                    RadioButton(
+                        selected = repeat == option,
+                        onClick = {
+                            repeat = option
+                        }
+                    )
+
+                    Text(
+                        text = repeatText(option),
+                        modifier =
+                            Modifier.padding(top = 12.dp)
+                    )
+                }
+            }
+
+            // Saves changes
+            Button(
+                onClick = {
+
+                    val selectedDate =
+                        selectedDateMillis?.let { millis ->
+                            Instant.ofEpochMilli(millis)
+                                .atZone(ZoneOffset.UTC)
+                                .toLocalDate()
+                        }
+
                     onSave(
                         task.copy(
                             title = title.trim(),
-                            description = description.trim(),
+                            description =
+                                description.trim(),
                             priority = priority,
                             date = selectedDate,
+                            listId = selectedListId,
                             reminder = reminder,
                             repeat = repeat
                         )
@@ -210,68 +387,128 @@ fun TaskDetailScreen(
                 modifier = Modifier.fillMaxWidth(),
                 enabled = title.isNotBlank()
             ) {
-                Text(text = stringResource(R.string.task_save))
+
+                Text(
+                    text = stringResource(
+                        R.string.task_save
+                    )
+                )
             }
         }
     }
 
+    // Date picker
     if (showDatePicker) {
 
-        val datePickerState = rememberDatePickerState(
-            initialSelectedDateMillis = selectedDateMillis
-        )
+        val datePickerState =
+            rememberDatePickerState(
+                initialSelectedDateMillis =
+                    selectedDateMillis
+            )
 
         DatePickerDialog(
-            onDismissRequest = { showDatePicker = false },
+            onDismissRequest = {
+                showDatePicker = false
+            },
             confirmButton = {
+
                 Button(
                     onClick = {
-                        selectedDateMillis = datePickerState.selectedDateMillis
+                        selectedDateMillis =
+                            datePickerState.selectedDateMillis
+
                         showDatePicker = false
                     }
                 ) {
-                    Text(stringResource(R.string.action_confirm))
+                    Text(
+                        stringResource(
+                            R.string.action_confirm
+                        )
+                    )
                 }
             },
             dismissButton = {
-                Button(onClick = { showDatePicker = false }) {
-                    Text(stringResource(R.string.action_cancel))
+
+                Button(
+                    onClick = {
+                        showDatePicker = false
+                    }
+                ) {
+                    Text(
+                        stringResource(
+                            R.string.action_cancel
+                        )
+                    )
                 }
             }
         ) {
-            DatePicker(state = datePickerState)
+
+            DatePicker(
+                state = datePickerState
+            )
         }
     }
 }
 
 @Composable
-private fun priorityText(priority: Priority): String {
+private fun priorityText(
+    priority: Priority
+): String {
     return when (priority) {
-        Priority.NONE -> stringResource(R.string.task_no_priority)
-        Priority.LOW -> stringResource(R.string.priority_low)
-        Priority.MEDIUM -> stringResource(R.string.priority_medium)
-        Priority.HIGH -> stringResource(R.string.priority_high)
+        Priority.NONE ->
+            stringResource(R.string.task_no_priority)
+
+        Priority.LOW ->
+            stringResource(R.string.priority_low)
+
+        Priority.MEDIUM ->
+            stringResource(R.string.priority_medium)
+
+        Priority.HIGH ->
+            stringResource(R.string.priority_high)
     }
 }
 
 @Composable
-private fun reminderText(reminder: ReminderFrequency): String {
+private fun reminderText(
+    reminder: ReminderFrequency
+): String {
     return when (reminder) {
-        ReminderFrequency.NONE -> stringResource(R.string.reminder_none)
-        ReminderFrequency.ONCE -> stringResource(R.string.reminder_once)
-        ReminderFrequency.DAILY -> stringResource(R.string.reminder_daily)
-        ReminderFrequency.WEEKLY -> stringResource(R.string.reminder_weekly)
-        ReminderFrequency.MONTHLY -> stringResource(R.string.reminder_monthly)
+        ReminderFrequency.NONE ->
+            stringResource(R.string.reminder_none)
+
+        ReminderFrequency.ONCE ->
+            stringResource(R.string.reminder_once)
+
+        ReminderFrequency.DAILY ->
+            stringResource(R.string.reminder_daily)
+
+        ReminderFrequency.WEEKLY ->
+            stringResource(R.string.reminder_weekly)
+
+        ReminderFrequency.MONTHLY ->
+            stringResource(R.string.reminder_monthly)
     }
 }
 
 @Composable
-private fun repeatText(repeat: RepeatFrequency): String {
+private fun repeatText(
+    repeat: RepeatFrequency
+): String {
     return when (repeat) {
-        RepeatFrequency.NONE -> stringResource(R.string.repeat_none)
-        RepeatFrequency.DAILY -> stringResource(R.string.repeat_daily)
-        RepeatFrequency.WEEKLY -> stringResource(R.string.repeat_weekly)
-        RepeatFrequency.MONTHLY -> stringResource(R.string.repeat_monthly)
-        RepeatFrequency.YEARLY -> stringResource(R.string.repeat_yearly)
+        RepeatFrequency.NONE ->
+            stringResource(R.string.repeat_none)
+
+        RepeatFrequency.DAILY ->
+            stringResource(R.string.repeat_daily)
+
+        RepeatFrequency.WEEKLY ->
+            stringResource(R.string.repeat_weekly)
+
+        RepeatFrequency.MONTHLY ->
+            stringResource(R.string.repeat_monthly)
+
+        RepeatFrequency.YEARLY ->
+            stringResource(R.string.repeat_yearly)
     }
 }

@@ -11,6 +11,7 @@ data class Task(
     val time: LocalTime? = null,
     val priority: Priority = Priority.MEDIUM,
     val completed: Boolean = false,
+    val listId : Int? = null,
     val reminder: ReminderFrequency = ReminderFrequency.NONE,
     val repeat: RepeatFrequency = RepeatFrequency.NONE
 )

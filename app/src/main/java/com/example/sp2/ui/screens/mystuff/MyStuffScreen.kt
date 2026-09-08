@@ -24,7 +24,8 @@ fun MyStuffScreen(
     onAddTask: () -> Unit = {},
     onAddNote: () -> Unit = {},
     onEditTask: (Int) -> Unit = {},
-    onOpenNote: (Int) -> Unit = {}
+    onOpenNote: (Int) -> Unit = {},
+    onOpenList: (Int) -> Unit = {}
 ) {
 
     var selectedTab by remember {
@@ -85,7 +86,8 @@ fun MyStuffScreen(
             // Tasks tab
             0 -> TasksScreen(
                 onAddTask = onAddTask,
-                onEditTask = onEditTask
+                onEditTask = onEditTask,
+                onOpenList = onOpenList
             )
 
             // Notes tab

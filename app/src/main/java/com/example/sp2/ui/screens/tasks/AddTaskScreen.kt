@@ -1,6 +1,7 @@
 package com.example.sp2.ui.screens.tasks
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,6 +14,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -24,6 +27,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,8 +50,12 @@ import java.time.ZoneOffset
 fun AddTaskScreen(
     onTaskAdded: () -> Unit,
     onBack: () -> Unit = {},
-    taskViewModel: TaskViewModel = viewModel()
+    taskViewModel: TaskViewModel = viewModel(),
+    taskListViewModel: TaskListViewModel = viewModel()
 ) {
+
+    // Current task lists stored in Room
+    val taskLists by taskListViewModel.taskLists.collectAsState()
 
     // Stores the task information entered by the user
     var title by rememberSaveable {
@@ -70,13 +78,22 @@ fun AddTaskScreen(
         mutableStateOf(RepeatFrequency.NONE)
     }
 
+    // Selected task list
+    var selectedListId by rememberSaveable {
+        mutableStateOf<Int?>(null)
+    }
+
+    // Controls the list dropdown
+    var showListMenu by remember {
+        mutableStateOf(false)
+    }
+
     // Stores the selected date as epoch millis
-    // so it survives configuration changes
     var selectedDateMillis by rememberSaveable {
         mutableStateOf<Long?>(null)
     }
 
-    // Controls the visibility of the date picker dialog
+    // Controls the date picker
     var showDatePicker by remember {
         mutableStateOf(false)
     }
@@ -114,7 +131,7 @@ fun AddTaskScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 
-            // Field for the task title
+            // Task title
             OutlinedTextField(
                 value = title,
                 onValueChange = {
@@ -129,7 +146,7 @@ fun AddTaskScreen(
                 singleLine = true
             )
 
-            // Field for the task description
+            // Task description
             OutlinedTextField(
                 value = description,
                 onValueChange = {
@@ -143,7 +160,71 @@ fun AddTaskScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            // Priority selection
+            // List selection
+            Text(
+                text = stringResource(R.string.task_list)
+            )
+
+            Box(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+
+                val selectedListName =
+                    taskLists.find {
+                        it.id == selectedListId
+                    }?.name
+                        ?: stringResource(R.string.task_no_list)
+
+                OutlinedButton(
+                    onClick = {
+                        showListMenu = true
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = selectedListName
+                    )
+                }
+
+                DropdownMenu(
+                    expanded = showListMenu,
+                    onDismissRequest = {
+                        showListMenu = false
+                    }
+                ) {
+
+                    // Leaves the task outside any list
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                stringResource(
+                                    R.string.task_no_list
+                                )
+                            )
+                        },
+                        onClick = {
+                            selectedListId = null
+                            showListMenu = false
+                        }
+                    )
+
+                    // Existing lists
+                    taskLists.forEach { taskList ->
+
+                        DropdownMenuItem(
+                            text = {
+                                Text(taskList.name)
+                            },
+                            onClick = {
+                                selectedListId = taskList.id
+                                showListMenu = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            // Priority
             Text(
                 text = stringResource(R.string.task_priority)
             )
@@ -168,7 +249,7 @@ fun AddTaskScreen(
                 }
             }
 
-            // Date selection
+            // Date
             Text(
                 text = stringResource(R.string.task_date)
             )
@@ -180,19 +261,22 @@ fun AddTaskScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
 
-                val selectedDate = selectedDateMillis?.let { millis ->
-                    Instant.ofEpochMilli(millis)
-                        .atZone(ZoneOffset.UTC)
-                        .toLocalDate()
-                }
+                val selectedDate =
+                    selectedDateMillis?.let { millis ->
+                        Instant.ofEpochMilli(millis)
+                            .atZone(ZoneOffset.UTC)
+                            .toLocalDate()
+                    }
 
                 Text(
                     text = selectedDate?.toString()
-                        ?: stringResource(R.string.task_select_date)
+                        ?: stringResource(
+                            R.string.task_select_date
+                        )
                 )
             }
 
-            // Reminder frequency selection
+            // Reminder
             Text(
                 text = stringResource(R.string.task_reminder)
             )
@@ -217,7 +301,7 @@ fun AddTaskScreen(
                 }
             }
 
-            // Repeat frequency selection
+            // Repeat
             Text(
                 text = stringResource(R.string.task_repeat)
             )
@@ -242,33 +326,33 @@ fun AddTaskScreen(
                 }
             }
 
-            // Adds the task to Room
+            // Saves the task
             Button(
                 onClick = {
 
-                    // Converts the selected date into LocalDate
-                    val selectedDate = selectedDateMillis?.let { millis ->
-                        Instant.ofEpochMilli(millis)
-                            .atZone(ZoneOffset.UTC)
-                            .toLocalDate()
-                    }
+                    val selectedDate =
+                        selectedDateMillis?.let { millis ->
+                            Instant.ofEpochMilli(millis)
+                                .atZone(ZoneOffset.UTC)
+                                .toLocalDate()
+                        }
 
-                    // Saves the task through the ViewModel
                     taskViewModel.addTask(
-                        title = title,
-                        description = description,
+                        title = title.trim(),
+                        description = description.trim(),
                         priority = priority,
                         date = selectedDate,
+                        listId = selectedListId,
                         reminder = reminder,
                         repeat = repeat
                     )
 
-                    // Returns to the previous screen
                     onTaskAdded()
                 },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = title.isNotBlank()
             ) {
+
                 Text(
                     text = stringResource(R.string.task_add)
                 )
@@ -276,10 +360,14 @@ fun AddTaskScreen(
         }
     }
 
-    // Date picker dialog
+    // Date picker
     if (showDatePicker) {
 
-        val datePickerState = rememberDatePickerState()
+        val datePickerState =
+            rememberDatePickerState(
+                initialSelectedDateMillis =
+                    selectedDateMillis
+            )
 
         DatePickerDialog(
             onDismissRequest = {
@@ -296,7 +384,9 @@ fun AddTaskScreen(
                     }
                 ) {
                     Text(
-                        text = stringResource(R.string.action_confirm)
+                        text = stringResource(
+                            R.string.action_confirm
+                        )
                     )
                 }
             },
@@ -308,11 +398,14 @@ fun AddTaskScreen(
                     }
                 ) {
                     Text(
-                        text = stringResource(R.string.action_cancel)
+                        text = stringResource(
+                            R.string.action_cancel
+                        )
                     )
                 }
             }
         ) {
+
             DatePicker(
                 state = datePickerState
             )
@@ -320,18 +413,25 @@ fun AddTaskScreen(
     }
 }
 
-// Returns the localized text for each priority level
+// Returns the localized text for each priority
 @Composable
 private fun priorityText(priority: Priority): String {
     return when (priority) {
-        Priority.NONE -> stringResource(R.string.task_no_priority)
-        Priority.LOW -> stringResource(R.string.priority_low)
-        Priority.MEDIUM -> stringResource(R.string.priority_medium)
-        Priority.HIGH -> stringResource(R.string.priority_high)
+        Priority.NONE ->
+            stringResource(R.string.task_no_priority)
+
+        Priority.LOW ->
+            stringResource(R.string.priority_low)
+
+        Priority.MEDIUM ->
+            stringResource(R.string.priority_medium)
+
+        Priority.HIGH ->
+            stringResource(R.string.priority_high)
     }
 }
 
-// Returns the localized text for each reminder frequency
+// Returns localized reminder text
 @Composable
 private fun reminderText(
     reminder: ReminderFrequency
@@ -354,7 +454,7 @@ private fun reminderText(
     }
 }
 
-// Returns the localized text for each repeat frequency
+// Returns localized repeat text
 @Composable
 private fun repeatText(
     repeat: RepeatFrequency

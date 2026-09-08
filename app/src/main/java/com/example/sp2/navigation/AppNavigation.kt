@@ -20,23 +20,34 @@ import com.example.sp2.ui.screens.notes.NotesScreen
 import com.example.sp2.ui.screens.settings.SettingsScreen
 import com.example.sp2.ui.screens.tasks.AddTaskScreen
 import com.example.sp2.ui.screens.tasks.TaskDetailScreen
+import com.example.sp2.ui.screens.tasks.TaskListDetailScreen
+import com.example.sp2.ui.screens.tasks.TaskListViewModel
 import com.example.sp2.ui.screens.tasks.TasksScreen
 import com.example.sp2.ui.screens.tasks.TaskViewModel
 
-// Controls the navigation between the main screens of the app
+// Controls navigation between the main screens of the app
 @Composable
 fun AppNavigation() {
 
-    // Creates and remembers the navigation controller
-    val navController = rememberNavController()
+    val navController =
+        rememberNavController()
 
-    // Shared TaskViewModel
-    val taskViewModel: TaskViewModel = viewModel()
+    // Shared task ViewModel
+    val taskViewModel:
+            TaskViewModel = viewModel()
 
-    // Observes tasks stored in Room
-    val tasks by taskViewModel.tasks.collectAsState()
+    // Shared task list ViewModel
+    val taskListViewModel:
+            TaskListViewModel = viewModel()
 
-    // Basic layout of the app
+    // Room tasks
+    val tasks by
+    taskViewModel.tasks.collectAsState()
+
+    // Room lists
+    val taskLists by
+    taskListViewModel.taskLists.collectAsState()
+
     Scaffold(
         bottomBar = {
             AppBottomBar(navController)
@@ -46,67 +57,106 @@ fun AppNavigation() {
         NavHost(
             navController = navController,
             startDestination = Routes.HOME,
-            modifier = Modifier.padding(innerPadding)
+            modifier =
+                Modifier.padding(innerPadding)
         ) {
 
             // Home
             composable(Routes.HOME) {
+
                 HomeScreen(
                     onEditTask = { taskId ->
+
                         navController.navigate(
                             Routes.taskDetail(taskId)
                         )
                     },
-                    taskViewModel = taskViewModel
+                    taskViewModel =
+                        taskViewModel
                 )
             }
 
             // Tasks
             composable(Routes.TASKS) {
+
                 TasksScreen(
                     onAddTask = {
+
                         navController.navigate(
                             Routes.ADD_TASK
                         )
                     },
+
                     onEditTask = { taskId ->
+
                         navController.navigate(
                             Routes.taskDetail(taskId)
                         )
                     },
-                    taskViewModel = taskViewModel
+
+                    onOpenList = { listId ->
+
+                        navController.navigate(
+                            Routes.taskListDetail(
+                                listId
+                            )
+                        )
+                    },
+
+                    taskViewModel =
+                        taskViewModel,
+
+                    taskListViewModel =
+                        taskListViewModel
                 )
             }
 
             // My Stuff
             composable(Routes.MY_STUFF) {
+
                 MyStuffScreen(
                     onAddTask = {
+
                         navController.navigate(
                             Routes.ADD_TASK
                         )
                     },
+
                     onAddNote = {
+
                         navController.navigate(
                             Routes.ADD_NOTE
                         )
                     },
+
                     onEditTask = { taskId ->
+
                         navController.navigate(
                             Routes.taskDetail(taskId)
                         )
                     },
+
                     onOpenNote = { noteId ->
+
                         navController.navigate(
                             Routes.noteDetail(noteId)
+                        )
+                    },
+
+                    onOpenList = { listId ->
+
+                        navController.navigate(
+                            Routes.taskListDetail(
+                                listId
+                            )
                         )
                     }
                 )
             }
 
-            // Creates a new note
-            // Creates a new note
+            // New note
             composable(Routes.ADD_NOTE) {
+
                 NotesScreen(
                     onBack = {
                         navController.popBackStack()
@@ -114,7 +164,7 @@ fun AppNavigation() {
                 )
             }
 
-            // Opens an existing note
+            // Existing note
             composable(
                 route = Routes.NOTE_DETAIL,
                 arguments = listOf(
@@ -125,7 +175,8 @@ fun AppNavigation() {
             ) { backStackEntry ->
 
                 val noteId =
-                    backStackEntry.arguments?.getInt("noteId")
+                    backStackEntry.arguments
+                        ?.getInt("noteId")
 
                 NotesScreen(
                     noteId = noteId,
@@ -137,13 +188,17 @@ fun AppNavigation() {
 
             // Calendar
             composable(Routes.CALENDAR) {
+
                 CalendarScreen(
                     onEditTask = { taskId ->
+
                         navController.navigate(
                             Routes.taskDetail(taskId)
                         )
                     },
-                    taskViewModel = taskViewModel
+
+                    taskViewModel =
+                        taskViewModel
                 )
             }
 
@@ -152,22 +207,30 @@ fun AppNavigation() {
                 SettingsScreen()
             }
 
-            // Add Task
+            // Add task
             composable(Routes.ADD_TASK) {
+
                 AddTaskScreen(
                     onTaskAdded = {
                         navController.popBackStack()
                     },
+
                     onBack = {
                         navController.popBackStack()
                     },
-                    taskViewModel = taskViewModel
+
+                    taskViewModel =
+                        taskViewModel,
+
+                    taskListViewModel =
+                        taskListViewModel
                 )
             }
 
-            // Task Detail
+            // Task detail
             composable(
                 route = Routes.TASK_DETAIL,
+
                 arguments = listOf(
                     navArgument("taskId") {
                         type = NavType.IntType
@@ -176,39 +239,96 @@ fun AppNavigation() {
             ) { backStackEntry ->
 
                 val taskId =
-                    backStackEntry.arguments?.getInt("taskId") ?: -1
+                    backStackEntry.arguments
+                        ?.getInt("taskId")
+                        ?: -1
 
-                // Finds the task in Room data
-                val task = tasks.find {
-                    it.id == taskId
-                }
+                val task =
+                    tasks.find {
+                        it.id == taskId
+                    }
 
                 if (task != null) {
 
                     TaskDetailScreen(
                         task = task,
 
-                        // Updates task in Room
-                        onSave = { updatedTask ->
+                        taskLists =
+                            taskLists,
+
+                        onSave = {
+                                updatedTask ->
+
                             taskViewModel.updateTask(
                                 updatedTask
                             )
 
-                            navController.popBackStack()
+                            navController
+                                .popBackStack()
                         },
 
-                        // Deletes task from Room
                         onDelete = {
+
                             taskViewModel.deleteTask(
                                 task
                             )
 
-                            navController.popBackStack()
+                            navController
+                                .popBackStack()
                         },
 
                         onBack = {
-                            navController.popBackStack()
+                            navController
+                                .popBackStack()
                         }
+                    )
+                }
+            }
+
+            // Task list detail
+            composable(
+                route =
+                    Routes.TASK_LIST_DETAIL,
+
+                arguments = listOf(
+                    navArgument("listId") {
+                        type = NavType.IntType
+                    }
+                )
+            ) { backStackEntry ->
+
+                val listId =
+                    backStackEntry.arguments
+                        ?.getInt("listId")
+                        ?: -1
+
+                val taskList =
+                    taskLists.find {
+                        it.id == listId
+                    }
+
+                if (taskList != null) {
+
+                    TaskListDetailScreen(
+                        taskList = taskList,
+
+                        onBack = {
+                            navController
+                                .popBackStack()
+                        },
+
+                        onEditTask = {
+                                taskId ->
+
+                            navController.navigate(
+                                Routes.taskDetail(
+                                    taskId
+                                )
+                            )
+                        },
+
+                        taskViewModel =
+                            taskViewModel
                     )
                 }
             }

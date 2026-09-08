@@ -4,23 +4,25 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import com.example.sp2.data.local.dao.NoteDao
 import com.example.sp2.data.local.dao.TaskDao
+import com.example.sp2.data.local.dao.TaskListDao
 import com.example.sp2.data.local.entity.NoteEntity
 import com.example.sp2.data.local.entity.TaskEntity
+import com.example.sp2.data.local.entity.TaskListEntity
 
-// Defines the local Room database
 @Database(
     entities = [
         TaskEntity::class,
-        NoteEntity::class
+        NoteEntity::class,
+        TaskListEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
 
-    // Provides access to task database operations
     abstract fun taskDao(): TaskDao
 
-    // Provides access to note database operations
     abstract fun noteDao(): NoteDao
+
+    abstract fun taskListDao(): TaskListDao
 }

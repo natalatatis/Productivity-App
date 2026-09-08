@@ -7,7 +7,7 @@
     <string name="nav_home">Inicio</string>
     <string name="nav_tasks">Tareas</string>
     <string name="nav_calendar">Calendario</string>
-    <string name="nav_settings">Configuración</string>
+    <string name="nav_settings">Ajustes</string>
 
     <!-- Home -->
     <string name="home_greeting">Buenas tardes</string>
@@ -31,6 +31,12 @@
     <string name="task_cancel">Cancelar</string>
     <string name="task_add_description">Agregar una descripción</string>
     <string name="task_mark_done">Marcar como terminado</string>
+    <string name="task_list">Lista</string>
+    <string name="task_no_list">Sin lista</string>
+    <string name="task_move">Mover</string>
+    <string name="task_new_list">Nueva lista</string>
+    <string name="task_list_name">Nombre de la lista</string>
+    <string name="action_create">Crear</string>
 
     <!-- Common priorities -->
     <string name="priority_low">Baja</string>
@@ -42,7 +48,7 @@
     <string name="calendar_next_month">Mes siguiente</string>
 
     <!-- Settings -->
-    <string name="settings_title">Configuración</string>
+    <string name="settings_title">Ajustes</string>
     <string name="settings_notifications">Notificaciones</string>
     <string name="settings_enable_notifications">Activar notificaciones</string>
     <string name="settings_notifications_description">Recibe recordatorios de tus tareas</string>

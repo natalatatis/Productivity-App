@@ -42,6 +42,7 @@ class TaskViewModel(
         priority: Priority,
         date: LocalDate? = null,
         time: LocalTime? = null,
+        listId: Int? = null,
         reminder: ReminderFrequency = ReminderFrequency.NONE,
         repeat: RepeatFrequency = RepeatFrequency.NONE
     ) {
@@ -54,6 +55,7 @@ class TaskViewModel(
                     priority = priority,
                     date = date,
                     time = time,
+                    listId = listId,
                     reminder = reminder,
                     repeat = repeat
                 )
@@ -72,6 +74,20 @@ class TaskViewModel(
     fun deleteTask(task: Task) {
         viewModelScope.launch {
             repository.deleteTask(task)
+        }
+    }
+
+    // Moves a task to another list
+    fun moveTaskToList(
+        task: Task,
+        listId: Int?
+    ) {
+        viewModelScope.launch {
+            repository.updateTask(
+                task.copy(
+                    listId = listId
+                )
+            )
         }
     }
 

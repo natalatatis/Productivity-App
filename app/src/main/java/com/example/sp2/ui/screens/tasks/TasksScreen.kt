@@ -17,16 +17,21 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DriveFileMove
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -44,74 +49,203 @@ import com.example.sp2.model.Task
 import com.example.sp2.ui.components.EmptyState
 import com.example.sp2.ui.components.PriorityChip
 import com.example.sp2.ui.components.SectionHeader
+import com.example.sp2.ui.components.TaskListFolderCard
 
-// Displays the list of tasks
+// Displays tasks and task lists
 @Composable
 fun TasksScreen(
     onAddTask: () -> Unit = {},
     onEditTask: (Int) -> Unit = {},
-    taskViewModel: TaskViewModel = viewModel()
+    onOpenList: (Int) -> Unit = {},
+    taskViewModel: TaskViewModel = viewModel(),
+    taskListViewModel: TaskListViewModel = viewModel()
 ) {
 
-    // Observes the tasks stored in Room
+    // Tasks stored in Room
     val tasks by taskViewModel.tasks.collectAsState()
+
+    // Lists stored in Room
+    val taskLists by taskListViewModel.taskLists.collectAsState()
+
+    // Tasks that do not belong to any list
+    val tasksWithoutList =
+        tasks.filter {
+            it.listId == null
+        }
+
+    // Controls new list dialog
+    var showNewListDialog by remember {
+        mutableStateOf(false)
+    }
+
+    var newListName by remember {
+        mutableStateOf("")
+    }
+
+    // Task selected for moving
+    var taskToMove by remember {
+        mutableStateOf<Task?>(null)
+    }
 
     Scaffold(
         floatingActionButton = {
+
             FloatingActionButton(
                 onClick = onAddTask
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = stringResource(
-                        R.string.task_add
-                    )
+                    contentDescription =
+                        stringResource(
+                            R.string.task_add
+                        )
                 )
             }
         }
     ) { paddingValues ->
 
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(20.dp)
+                .padding(horizontal = 20.dp),
+            verticalArrangement =
+                Arrangement.spacedBy(12.dp)
         ) {
 
             // Screen title
-            SectionHeader(
-                title = stringResource(R.string.tasks_title)
-            )
+            item {
 
-            Spacer(
-                modifier = Modifier.height(16.dp)
-            )
-
-            if (tasks.isEmpty()) {
-
-                EmptyState(
-                    title = stringResource(R.string.tasks_empty_title),
-                    description = stringResource(
-                        R.string.tasks_empty_description
-                    )
+                Spacer(
+                    modifier = Modifier.height(20.dp)
                 )
 
-            } else {
+                SectionHeader(
+                    title =
+                        stringResource(
+                            R.string.tasks_title
+                        )
+                )
 
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                Spacer(
+                    modifier = Modifier.height(4.dp)
+                )
+            }
+
+            // No tasks and no lists
+            if (
+                tasks.isEmpty() &&
+                taskLists.isEmpty()
+            ) {
+
+                item {
+
+                    EmptyState(
+                        title =
+                            stringResource(
+                                R.string.tasks_empty_title
+                            ),
+                        description =
+                            stringResource(
+                                R.string.tasks_empty_description
+                            )
+                    )
+                }
+            }
+
+            // Tasks not assigned to a list
+            if (tasksWithoutList.isNotEmpty()) {
+
+                item {
+
+                    Text(
+                        text =
+                            stringResource(
+                                R.string.task_no_list
+                            ),
+                        style =
+                            MaterialTheme.typography.titleMedium
+                    )
+                }
+
+                items(
+                    items = tasksWithoutList,
+                    key = {
+                        "task_${it.id}"
+                    }
+                ) { task ->
+
+                    TaskRow(
+                        task = task,
+
+                        onEdit = {
+                            onEditTask(task.id)
+                        },
+
+                        onMove = {
+                            taskToMove = task
+                        },
+
+                        onToggle = {
+                            taskViewModel.toggleTask(task)
+                        },
+
+                        onDelete = {
+                            taskViewModel.deleteTask(task)
+                        }
+                    )
+                }
+            }
+
+            // Each list and its tasks
+            taskLists.forEach { taskList ->
+
+                val tasksForList =
+                    tasks.filter {
+                        it.listId == taskList.id
+                    }
+
+                item(
+                    key =
+                        "list_${taskList.id}"
                 ) {
 
-                    items(
-                        items = tasks,
-                        key = { it.id }
-                    ) { task ->
+                    Spacer(
+                        modifier = Modifier.height(8.dp)
+                    )
+
+                    TaskListFolderCard(
+                        taskList = taskList,
+                        taskCount = tasksForList.size,
+                        onClick = {
+                            onOpenList(taskList.id)
+                        }
+                    )
+                }
+
+                items(
+                    items = tasksForList,
+                    key = {
+                        "task_${it.id}"
+                    }
+                ) { task ->
+
+                    Box(
+                        modifier =
+                            Modifier.padding(
+                                start = 16.dp
+                            )
+                    ) {
 
                         TaskRow(
                             task = task,
 
                             onEdit = {
                                 onEditTask(task.id)
+                            },
+
+                            onMove = {
+                                taskToMove = task
                             },
 
                             onToggle = {
@@ -125,9 +259,213 @@ fun TasksScreen(
                     }
                 }
             }
+
+            // Create new list
+            item {
+
+                TextButton(
+                    onClick = {
+                        showNewListDialog = true
+                    }
+                ) {
+
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = null
+                    )
+
+                    Text(
+                        text =
+                            stringResource(
+                                R.string.task_new_list
+                            )
+                    )
+                }
+
+                Spacer(
+                    modifier = Modifier.height(80.dp)
+                )
+            }
         }
     }
+
+    // Create list dialog
+    if (showNewListDialog) {
+
+        AlertDialog(
+            onDismissRequest = {
+                showNewListDialog = false
+                newListName = ""
+            },
+
+            title = {
+                Text(
+                    text =
+                        stringResource(
+                            R.string.task_new_list
+                        )
+                )
+            },
+
+            text = {
+
+                OutlinedTextField(
+                    value = newListName,
+
+                    onValueChange = {
+                        newListName = it
+                    },
+
+                    label = {
+                        Text(
+                            text =
+                                stringResource(
+                                    R.string.task_list_name
+                                )
+                        )
+                    },
+
+                    singleLine = true
+                )
+            },
+
+            confirmButton = {
+
+                Button(
+                    onClick = {
+
+                        taskListViewModel.addList(
+                            newListName
+                        )
+
+                        newListName = ""
+
+                        showNewListDialog = false
+                    },
+                    enabled =
+                        newListName.isNotBlank()
+                ) {
+
+                    Text(
+                        text =
+                            stringResource(
+                                R.string.action_create
+                            )
+                    )
+                }
+            },
+
+            dismissButton = {
+
+                TextButton(
+                    onClick = {
+                        newListName = ""
+                        showNewListDialog = false
+                    }
+                ) {
+
+                    Text(
+                        text =
+                            stringResource(
+                                R.string.action_cancel
+                            )
+                    )
+                }
+            }
+        )
+    }
+
+    // Move task dialog
+    taskToMove?.let { task ->
+
+        AlertDialog(
+            onDismissRequest = {
+                taskToMove = null
+            },
+
+            title = {
+                Text(
+                    text =
+                        stringResource(
+                            R.string.task_move
+                        )
+                )
+            },
+
+            text = {
+
+                Column {
+
+                    // Move outside all lists
+                    TextButton(
+                        onClick = {
+
+                            taskViewModel.moveTaskToList(
+                                task = task,
+                                listId = null
+                            )
+
+                            taskToMove = null
+                        },
+                        modifier =
+                            Modifier.fillMaxWidth()
+                    ) {
+
+                        Text(
+                            text =
+                                stringResource(
+                                    R.string.task_no_list
+                                )
+                        )
+                    }
+
+                    // Move to one of the lists
+                    taskLists.forEach { taskList ->
+
+                        TextButton(
+                            onClick = {
+
+                                taskViewModel.moveTaskToList(
+                                    task = task,
+                                    listId = taskList.id
+                                )
+
+                                taskToMove = null
+                            },
+                            modifier =
+                                Modifier.fillMaxWidth()
+                        ) {
+
+                            Text(
+                                text = taskList.name
+                            )
+                        }
+                    }
+                }
+            },
+
+            confirmButton = {},
+
+            dismissButton = {
+
+                TextButton(
+                    onClick = {
+                        taskToMove = null
+                    }
+                ) {
+
+                    Text(
+                        text =
+                            stringResource(
+                                R.string.action_cancel
+                            )
+                    )
+                }
+            }
+        )
+    }
 }
+
 
 // Displays an individual task row
 @OptIn(ExperimentalFoundationApi::class)
@@ -135,11 +473,12 @@ fun TasksScreen(
 private fun TaskRow(
     task: Task,
     onEdit: () -> Unit,
+    onMove: () -> Unit,
     onToggle: () -> Unit,
     onDelete: () -> Unit
 ) {
 
-    // Controls the long-press menu
+    // Controls long-press menu
     var showMenu by remember {
         mutableStateOf(false)
     }
@@ -151,28 +490,33 @@ private fun TaskRow(
                 .fillMaxWidth()
                 .combinedClickable(
                     onClick = {
-                        // Normal click can later open task details if wanted
+                        // Can later open task directly
                     },
                     onLongClick = {
                         showMenu = true
                     }
                 ),
+
             shape = RoundedCornerShape(20.dp),
-            color = MaterialTheme.colorScheme.surfaceVariant.copy(
-                alpha = 0.4f
-            )
+
+            color =
+                MaterialTheme.colorScheme
+                    .surfaceVariant
+                    .copy(alpha = 0.4f)
         ) {
 
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(12.dp),
-                verticalAlignment = Alignment.CenterVertically
+
+                verticalAlignment =
+                    Alignment.CenterVertically
             ) {
 
-                // Marks the task as completed or incomplete
                 Checkbox(
                     checked = task.completed,
+
                     onCheckedChange = {
                         onToggle()
                     }
@@ -182,29 +526,38 @@ private fun TaskRow(
                     modifier = Modifier
                         .weight(1f)
                         .padding(horizontal = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(6.dp)
+
+                    verticalArrangement =
+                        Arrangement.spacedBy(6.dp)
                 ) {
 
-                    // Task title
                     Text(
                         text = task.title,
-                        style = MaterialTheme.typography.titleMedium,
-                        textDecoration = if (task.completed) {
-                            TextDecoration.LineThrough
-                        } else {
-                            TextDecoration.None
-                        }
+
+                        style =
+                            MaterialTheme.typography
+                                .titleMedium,
+
+                        textDecoration =
+                            if (task.completed) {
+                                TextDecoration.LineThrough
+                            } else {
+                                TextDecoration.None
+                            }
                     )
 
-                    // Task description
-                    if (task.description.isNotBlank()) {
+                    if (
+                        task.description.isNotBlank()
+                    ) {
+
                         Text(
                             text = task.description,
-                            style = MaterialTheme.typography.bodyMedium
+                            style =
+                                MaterialTheme.typography
+                                    .bodyMedium
                         )
                     }
 
-                    // Task priority
                     PriorityChip(
                         priority = task.priority
                     )
@@ -212,15 +565,16 @@ private fun TaskRow(
             }
         }
 
-        // Menu shown after long pressing the task
+        // Long press options
         DropdownMenu(
             expanded = showMenu,
+
             onDismissRequest = {
                 showMenu = false
             }
         ) {
 
-            // Edit option
+            // Edit
             DropdownMenuItem(
                 text = {
                     Text(
@@ -229,19 +583,46 @@ private fun TaskRow(
                         )
                     )
                 },
+
                 leadingIcon = {
                     Icon(
-                        imageVector = Icons.Default.Edit,
+                        imageVector =
+                            Icons.Default.Edit,
                         contentDescription = null
                     )
                 },
+
                 onClick = {
                     showMenu = false
                     onEdit()
                 }
             )
 
-            // Delete option
+            // Move
+            DropdownMenuItem(
+                text = {
+                    Text(
+                        stringResource(
+                            R.string.task_move
+                        )
+                    )
+                },
+
+                leadingIcon = {
+                    Icon(
+                        imageVector =
+                            Icons.Default.DriveFileMove,
+                        contentDescription = null
+                    )
+                },
+
+                onClick = {
+                    showMenu = false
+                    onMove()
+                }
+            )
+
+            // Delete
             DropdownMenuItem(
                 text = {
                     Text(
@@ -250,12 +631,15 @@ private fun TaskRow(
                         )
                     )
                 },
+
                 leadingIcon = {
                     Icon(
-                        imageVector = Icons.Default.Delete,
+                        imageVector =
+                            Icons.Default.Delete,
                         contentDescription = null
                     )
                 },
+
                 onClick = {
                     showMenu = false
                     onDelete()

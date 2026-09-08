@@ -18,6 +18,9 @@ data class TaskEntity(
     val date: String? = null,
     val time: String? = null,
 
+    //Optional task list
+    val listId: Int? = null,
+
     // Enums are stored as text
     val priority: String,
     val completed: Boolean = false,

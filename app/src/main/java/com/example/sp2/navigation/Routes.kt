@@ -12,16 +12,22 @@ object Routes {
 
     const val MY_STUFF = "my_stuff"
 
-    // Route pattern used by the NavHost (includes the argument placeholder)
+    // Task routes
     const val TASK_DETAIL = "task_detail/{taskId}"
 
-    // Builds the actual navigable route for a specific task
     fun taskDetail(taskId: Int) = "task_detail/$taskId"
 
-    // Notes routes
+    // Note routes
     const val NOTE_DETAIL = "note/{noteId}"
 
     fun noteDetail(noteId: Int): String {
         return "note/$noteId"
+    }
+
+    // Task list routes
+    const val TASK_LIST_DETAIL = "task_list/{listId}"
+
+    fun taskListDetail(listId: Int): String {
+        return "task_list/$listId"
     }
 }

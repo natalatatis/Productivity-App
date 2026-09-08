@@ -18,6 +18,7 @@ fun Task.toEntity(): TaskEntity {
         time = time?.toString(),
         priority = priority.name,
         completed = completed,
+        listId = listId,
         reminder = reminder.name,
         repeat = repeat.name
     )
@@ -33,6 +34,7 @@ fun TaskEntity.toTask(): Task {
         time = time?.let { LocalTime.parse(it) },
         priority = Priority.valueOf(priority),
         completed = completed,
+        listId = listId,
         reminder = ReminderFrequency.valueOf(reminder),
         repeat = RepeatFrequency.valueOf(repeat)
     )
