@@ -20,7 +20,8 @@ class TaskListViewModel(
 
     private val repository =
         TaskListRepository(
-            database.taskListDao()
+            taskListDao = database.taskListDao(),
+            taskDao = database.taskDao()
         )
 
     // Lists available to the UI
@@ -39,6 +40,7 @@ class TaskListViewModel(
         }
 
         viewModelScope.launch {
+
             repository.addList(
                 name.trim()
             )
@@ -49,15 +51,21 @@ class TaskListViewModel(
     fun updateList(taskList: TaskList) {
 
         viewModelScope.launch {
-            repository.updateList(taskList)
+
+            repository.updateList(
+                taskList
+            )
         }
     }
 
-    // Deletes a list
+    // Deletes a list and its tasks
     fun deleteList(taskList: TaskList) {
 
         viewModelScope.launch {
-            repository.deleteList(taskList)
+
+            repository.deleteList(
+                taskList
+            )
         }
     }
 }

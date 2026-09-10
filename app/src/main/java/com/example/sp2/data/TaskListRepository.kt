@@ -1,5 +1,6 @@
 package com.example.sp2.data
 
+import com.example.sp2.data.local.dao.TaskDao
 import com.example.sp2.data.local.dao.TaskListDao
 import com.example.sp2.data.local.toEntity
 import com.example.sp2.data.local.toTaskList
@@ -8,10 +9,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 class TaskListRepository(
-    private val taskListDao: TaskListDao
+    private val taskListDao: TaskListDao,
+    private val taskDao: TaskDao
 ) {
 
-    // Observes all lists stored in Room
     val taskLists: Flow<List<TaskList>> =
         taskListDao.getAllLists().map { entities ->
             entities.map {
@@ -19,9 +20,10 @@ class TaskListRepository(
             }
         }
 
-    // Gets a specific list
     suspend fun getListById(id: Int): TaskList? {
-        return taskListDao.getListById(id)?.toTaskList()
+        return taskListDao
+            .getListById(id)
+            ?.toTaskList()
     }
 
     // Creates a list
@@ -43,8 +45,13 @@ class TaskListRepository(
         )
     }
 
-    // Deletes a list
+    // Deletes the tasks inside the list and then the list
     suspend fun deleteList(taskList: TaskList) {
+
+        taskDao.deleteTasksByListId(
+            taskList.id
+        )
+
         taskListDao.deleteList(
             taskList.toEntity()
         )

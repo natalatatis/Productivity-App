@@ -50,6 +50,7 @@ import com.example.sp2.ui.components.EmptyState
 import com.example.sp2.ui.components.PriorityChip
 import com.example.sp2.ui.components.SectionHeader
 import com.example.sp2.ui.components.TaskListFolderCard
+import com.example.sp2.model.TaskList
 
 // Displays tasks and task lists
 @Composable
@@ -85,6 +86,11 @@ fun TasksScreen(
     // Task selected for moving
     var taskToMove by remember {
         mutableStateOf<Task?>(null)
+    }
+
+    // List selected for deletion
+    var listToDelete by remember {
+        mutableStateOf<TaskList?>(null)
     }
 
     Scaffold(
@@ -217,8 +223,13 @@ fun TasksScreen(
                     TaskListFolderCard(
                         taskList = taskList,
                         taskCount = tasksForList.size,
+
                         onClick = {
                             onOpenList(taskList.id)
+                        },
+
+                        onLongClick = {
+                            listToDelete = taskList
                         }
                     )
                 }
@@ -459,6 +470,91 @@ fun TasksScreen(
                             stringResource(
                                 R.string.action_cancel
                             )
+                    )
+                }
+            }
+        )
+    }
+
+    // Confirms deletion of a task list
+    listToDelete?.let { taskList ->
+
+        val taskCount = tasks.count {
+            it.listId == taskList.id
+        }
+
+        AlertDialog(
+            onDismissRequest = {
+                listToDelete = null
+            },
+
+            title = {
+                Text(
+                    text = stringResource(
+                        R.string.task_delete_list_title
+                    )
+                )
+            },
+
+            text = {
+
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+
+                    Text(
+                        text = stringResource(
+                            R.string.task_delete_list_message,
+                            taskList.name
+                        )
+                    )
+
+                    if (taskCount > 0) {
+
+                        Text(
+                            text = stringResource(
+                                R.string.task_delete_list_warning,
+                                taskCount
+                            ),
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
+            },
+
+            confirmButton = {
+
+                Button(
+                    onClick = {
+
+                        taskListViewModel.deleteList(
+                            taskList
+                        )
+
+                        listToDelete = null
+                    }
+                ) {
+
+                    Text(
+                        text = stringResource(
+                            R.string.task_delete_list_confirm
+                        )
+                    )
+                }
+            },
+
+            dismissButton = {
+
+                TextButton(
+                    onClick = {
+                        listToDelete = null
+                    }
+                ) {
+
+                    Text(
+                        text = stringResource(
+                            R.string.action_cancel
+                        )
                     )
                 }
             }
