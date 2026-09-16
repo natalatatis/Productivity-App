@@ -89,6 +89,7 @@ fun HomeScreen(
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 appUsageViewModel.refresh()
+                habitViewModel.refreshForNewDay()
             }
         }
 

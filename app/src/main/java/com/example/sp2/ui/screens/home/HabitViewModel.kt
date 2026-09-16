@@ -38,6 +38,14 @@ class HabitViewModel(
         }
     }
 
+    // Re-checks every habit's streak/period, called each time Home
+    // becomes visible again — not just when the app first opens
+    fun refreshForNewDay() {
+        viewModelScope.launch {
+            repository.reconcileAll()
+        }
+    }
+
     fun addHabit(
         name: String,
         type: HabitType,

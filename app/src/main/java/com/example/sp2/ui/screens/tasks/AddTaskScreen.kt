@@ -78,9 +78,9 @@ fun AddTaskScreen(
         mutableStateOf(RepeatFrequency.NONE)
     }
 
-    // Selected task list
+    // Selected task list — defaults to the non-deletable "General" folder
     var selectedListId by rememberSaveable {
-        mutableStateOf<Int?>(null)
+        mutableStateOf<Int?>(com.example.sp2.model.TaskList.GENERAL_FOLDER_ID)
     }
 
     // Controls the list dropdown
@@ -172,8 +172,7 @@ fun AddTaskScreen(
                 val selectedListName =
                     taskLists.find {
                         it.id == selectedListId
-                    }?.name
-                        ?: stringResource(R.string.task_no_list)
+                    }?.name ?: ""
 
                 OutlinedButton(
                     onClick = {
@@ -192,21 +191,6 @@ fun AddTaskScreen(
                         showListMenu = false
                     }
                 ) {
-
-                    // Leaves the task outside any list
-                    DropdownMenuItem(
-                        text = {
-                            Text(
-                                stringResource(
-                                    R.string.task_no_list
-                                )
-                            )
-                        },
-                        onClick = {
-                            selectedListId = null
-                            showListMenu = false
-                        }
-                    )
 
                     // Existing lists
                     taskLists.forEach { taskList ->

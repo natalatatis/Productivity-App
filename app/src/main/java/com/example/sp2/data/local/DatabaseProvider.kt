@@ -196,6 +196,25 @@ object DatabaseProvider {
         }
     }
 
+    private val MIGRATION_9_10 = object : Migration(9, 10) {
+
+        override fun migrate(db: SupportSQLiteDatabase) {
+
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS `note_lists` (
+                    `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                    `name` TEXT NOT NULL
+                )
+                """.trimIndent()
+            )
+
+            db.execSQL(
+                "ALTER TABLE `notes` ADD COLUMN `listId` INTEGER DEFAULT NULL"
+            )
+        }
+    }
+
     fun getDatabase(context: Context): AppDatabase {
 
         return INSTANCE ?: synchronized(this) {
@@ -213,7 +232,8 @@ object DatabaseProvider {
                     MIGRATION_5_6,
                     MIGRATION_6_7,
                     MIGRATION_7_8,
-                    MIGRATION_8_9
+                    MIGRATION_8_9,
+                    MIGRATION_9_10
                 )
                 .build()
 

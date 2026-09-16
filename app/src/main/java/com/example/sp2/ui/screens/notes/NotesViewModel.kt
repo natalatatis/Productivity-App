@@ -3,6 +3,7 @@ package com.example.sp2.ui.screens.notes
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.sp2.R
 import com.example.sp2.data.NotesRepository
 import com.example.sp2.data.local.DatabaseProvider
 import com.example.sp2.model.Note
@@ -46,6 +47,7 @@ class NotesViewModel(
         title: String,
         content: String,
         date: String,
+        listId: Int?,
         onNoteCreated: (Int) -> Unit
     ) {
 
@@ -60,15 +62,22 @@ class NotesViewModel(
                 return@launch
             }
 
+            // Falls back to a default title when the person only
+            // typed content, so the note never shows up blank
+            val finalTitle = title.trim().ifBlank {
+                getApplication<Application>().getString(R.string.note_untitled)
+            }
+
             if (noteId == null) {
 
                 // Creates the note for the first time
                 val newId = repository.addNote(
                     Note(
                         id = 0,
-                        title = title.trim(),
+                        title = finalTitle,
                         content = content.trim(),
-                        date = date
+                        date = date,
+                        listId = listId
                     )
                 )
 
@@ -78,13 +87,14 @@ class NotesViewModel(
 
             } else {
 
-                // Updates the existing note
+                // Updates the existing note, keeping its folder
                 repository.updateNote(
                     Note(
                         id = noteId,
-                        title = title.trim(),
+                        title = finalTitle,
                         content = content.trim(),
-                        date = date
+                        date = date,
+                        listId = listId
                     )
                 )
             }
@@ -94,6 +104,12 @@ class NotesViewModel(
     fun deleteNote(note: Note) {
         viewModelScope.launch {
             repository.deleteNote(note)
+        }
+    }
+
+    fun moveNoteToList(note: Note, listId: Int) {
+        viewModelScope.launch {
+            repository.updateNote(note.copy(listId = listId))
         }
     }
 }

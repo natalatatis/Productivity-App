@@ -208,5 +208,23 @@
     <string name="alarm_edit">Edit alarm</string>
     <string name="alarm_save">Save</string>
 
+    <string name="note_folders_title">Folders</string>
+    <string name="note_new_folder">New folder</string>
+    <string name="note_folder_name">Folder name</string>
+    <string name="note_folder_count">%1$d notes</string>
+    <string name="note_folders_empty_title">No folders yet</string>
+    <string name="note_folders_empty_description">Create one to organize your notes</string>
+    <string name="notes_all_in_folders_title">All your notes are in folders</string>
+    <string name="note_delete_folder_title">Delete folder?</string>
+    <string name="note_delete_folder_message">Are you sure you want to delete "%1$s"?</string>
+    <string name="note_delete_folder_warning">%1$d notes inside this folder will also be permanently deleted.</string>
 
+    <string name="task_folders_title">Folders</string>
+
+    <string name="note_untitled">Untitled Note</string>
+
+    <string name="search_tasks">Search tasks</string>
+    <string name="search_notes">Search notes</string>
+    <string name="create_alarm">New alarm</string>
+    <string name="create_alarm_description">Set a time-based reminder</string>
 </resources>

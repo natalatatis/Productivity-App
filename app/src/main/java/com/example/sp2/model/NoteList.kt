@@ -1,6 +1,6 @@
 package com.example.sp2.model
 
-data class TaskList(
+data class NoteList(
     val id: Int = 0,
     val name: String
 ) {

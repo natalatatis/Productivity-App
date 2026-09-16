@@ -26,6 +26,19 @@ class TaskListRepository(
             ?.toTaskList()
     }
 
+    // Guarantees a non-deletable "General" folder always exists,
+    // reserved at a fixed id — called once when the app opens
+    suspend fun ensureGeneralFolder() {
+        if (taskListDao.getListById(TaskList.GENERAL_FOLDER_ID) == null) {
+            taskListDao.insertList(
+                com.example.sp2.data.local.entity.TaskListEntity(
+                    id = TaskList.GENERAL_FOLDER_ID,
+                    name = "General"
+                )
+            )
+        }
+    }
+
     // Creates a list
     suspend fun addList(name: String): Long {
 

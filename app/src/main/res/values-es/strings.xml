@@ -207,4 +207,23 @@
     <string name="alarm_edit">Editar alarma</string>
     <string name="alarm_save">Guardar</string>
 
+    <string name="note_folders_title">Carpetas</string>
+    <string name="note_new_folder">Nueva carpeta</string>
+    <string name="note_folder_name">Nombre de la carpeta</string>
+    <string name="note_folder_count">%1$d notas</string>
+    <string name="note_folders_empty_title">Aún no hay carpetas</string>
+    <string name="note_folders_empty_description">Crea una para organizar tus notas</string>
+    <string name="notes_all_in_folders_title">Todas tus notas están en carpetas</string>
+    <string name="note_delete_folder_title">¿Eliminar carpeta?</string>
+    <string name="note_delete_folder_message">¿Estás seguro de que deseas eliminar "%1$s"?</string>
+    <string name="note_delete_folder_warning">También se eliminarán permanentemente las %1$d notas dentro de esta carpeta.</string>
+
+    <string name="task_folders_title">Carpetas</string>
+
+    <string name="note_untitled">Nota sin título</string>
+
+    <string name="search_tasks">Buscar tareas</string>
+    <string name="search_notes">Buscar notas</string>
+    <string name="create_alarm">Nueva alarma</string>
+    <string name="create_alarm_description">Configura un recordatorio con hora</string>
 </resources>

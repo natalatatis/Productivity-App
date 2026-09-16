@@ -15,8 +15,13 @@ import androidx.navigation.navArgument
 import com.example.sp2.ui.components.AppBottomBar
 import com.example.sp2.ui.screens.calendar.CalendarScreen
 import com.example.sp2.ui.screens.home.HabitViewModel
+import com.example.sp2.ui.screens.reminders.RemindersViewModel
 import com.example.sp2.ui.screens.home.HomeScreen
 import com.example.sp2.ui.screens.mystuff.MyStuffScreen
+import com.example.sp2.ui.screens.notes.NoteFolderDetailScreen
+import com.example.sp2.ui.screens.notes.NoteFoldersScreen
+import com.example.sp2.ui.screens.tasks.TaskFoldersScreen
+import com.example.sp2.ui.screens.notes.NoteListViewModel
 import com.example.sp2.ui.screens.notes.NotesScreen
 import com.example.sp2.ui.screens.reminders.RemindersScreen
 import com.example.sp2.ui.screens.settings.SettingsScreen
@@ -48,6 +53,18 @@ fun AppNavigation() {
     val habitViewModel:
             HabitViewModel = viewModel()
 
+    // Shared note-folder ViewModel
+    val noteListViewModel:
+            NoteListViewModel = viewModel()
+
+    // Shared reminders ViewModel — needed for creating alarms
+    // from the global "+" button
+    val remindersViewModel:
+            RemindersViewModel = viewModel()
+
+    val noteLists by
+    noteListViewModel.noteLists.collectAsState()
+
     // Room tasks
     val tasks by
     taskViewModel.tasks.collectAsState()
@@ -60,7 +77,8 @@ fun AppNavigation() {
         bottomBar = {
             AppBottomBar(
                 navController = navController,
-                habitViewModel = habitViewModel
+                habitViewModel = habitViewModel,
+                remindersViewModel = remindersViewModel
             )
         }
     ) { innerPadding ->
@@ -113,14 +131,7 @@ fun AppNavigation() {
                         )
                     },
 
-                    onOpenList = { listId ->
-
-                        navController.navigate(
-                            Routes.taskListDetail(
-                                listId
-                            )
-                        )
-                    },
+                    onOpenFolders = { navController.navigate(Routes.TASK_FOLDERS) },
 
                     taskViewModel =
                         taskViewModel,
@@ -144,7 +155,7 @@ fun AppNavigation() {
                     onAddNote = {
 
                         navController.navigate(
-                            Routes.ADD_NOTE
+                            Routes.addNote()
                         )
                     },
 
@@ -162,21 +173,106 @@ fun AppNavigation() {
                         )
                     },
 
-                    onOpenList = { listId ->
+                    onOpenTaskFolders = {
 
                         navController.navigate(
-                            Routes.taskListDetail(
-                                listId
-                            )
+                            Routes.TASK_FOLDERS
+                        )
+                    },
+
+                    onOpenNoteFolders = {
+
+                        navController.navigate(
+                            Routes.NOTE_FOLDERS
                         )
                     }
                 )
             }
 
+            // Task folders list
+            composable(Routes.TASK_FOLDERS) {
+
+                TaskFoldersScreen(
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                    onOpenFolder = { listId ->
+                        navController.navigate(
+                            Routes.taskListDetail(listId)
+                        )
+                    },
+                    taskListViewModel = taskListViewModel
+                )
+            }
+
+            // Note folders list
+            composable(Routes.NOTE_FOLDERS) {
+
+                NoteFoldersScreen(
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                    onOpenFolder = { listId ->
+                        navController.navigate(
+                            Routes.noteFolderDetail(listId)
+                        )
+                    },
+                    noteListViewModel = noteListViewModel
+                )
+            }
+
+            // Notes inside one folder
+            composable(
+                route = Routes.NOTE_FOLDER_DETAIL,
+                arguments = listOf(
+                    navArgument("listId") {
+                        type = NavType.IntType
+                    }
+                )
+            ) { backStackEntry ->
+
+                val listId =
+                    backStackEntry.arguments?.getInt("listId") ?: -1
+
+                val noteList = noteLists.find { it.id == listId }
+
+                if (noteList != null) {
+
+                    NoteFolderDetailScreen(
+                        noteList = noteList,
+                        onBack = {
+                            navController.popBackStack()
+                        },
+                        onOpenNote = { noteId ->
+                            navController.navigate(
+                                Routes.noteDetail(noteId)
+                            )
+                        },
+                        onAddNote = {
+                            navController.navigate(
+                                Routes.addNote(listId)
+                            )
+                        }
+                    )
+                }
+            }
+
             // New note
-            composable(Routes.ADD_NOTE) {
+            composable(
+                route = Routes.ADD_NOTE,
+                arguments = listOf(
+                    navArgument("listId") {
+                        type = NavType.IntType
+                        defaultValue = -1
+                    }
+                )
+            ) { backStackEntry ->
+
+                val listId = backStackEntry.arguments?.getInt("listId")
+                    ?.takeIf { it != -1 }
 
                 NotesScreen(
+                    initialListId = listId,
                     onBack = {
                         navController.popBackStack()
                     }

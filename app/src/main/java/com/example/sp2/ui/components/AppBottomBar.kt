@@ -21,6 +21,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.sp2.R
 import com.example.sp2.navigation.Routes
 import com.example.sp2.ui.screens.home.HabitViewModel
+import com.example.sp2.ui.screens.reminders.RemindersViewModel
 
 // Represents an item in the bottom navigation bar
 data class BottomNavItem(
@@ -32,7 +33,8 @@ data class BottomNavItem(
 @Composable
 fun AppBottomBar(
     navController: NavHostController,
-    habitViewModel: HabitViewModel
+    habitViewModel: HabitViewModel,
+    remindersViewModel: RemindersViewModel
 ) {
     // Controls whether the create dialog is visible
     var showCreateDialog by remember {
@@ -42,6 +44,11 @@ fun AppBottomBar(
     // Controls the "new habit" dialog, shown directly from here
     // since creating a habit isn't a navigable screen
     var showCreateHabitDialog by remember {
+        mutableStateOf(false)
+    }
+
+    // Controls the "new alarm" dialog, same reasoning
+    var showCreateAlarmDialog by remember {
         mutableStateOf(false)
     }
 
@@ -126,6 +133,31 @@ fun AppBottomBar(
             onCreateHabit = {
                 showCreateDialog = false
                 showCreateHabitDialog = true
+            },
+            onCreateAlarm = {
+                showCreateDialog = false
+                showCreateAlarmDialog = true
+            }
+        )
+    }
+
+    // Create alarm dialog
+    if (showCreateAlarmDialog) {
+        CreateAlarmDialog(
+            onDismiss = {
+                showCreateAlarmDialog = false
+            },
+            onCreate = { time, label, days, soundUri, snoozeMinutes ->
+
+                remindersViewModel.addAlarm(
+                    time = time,
+                    label = label,
+                    days = days,
+                    soundUri = soundUri,
+                    snoozeMinutes = snoozeMinutes
+                )
+
+                showCreateAlarmDialog = false
             }
         )
     }

@@ -75,9 +75,10 @@ fun TaskDetailScreen(
         mutableStateOf(task.repeat)
     }
 
-    // Current task list
+    // Current task list — falls back to "General" for legacy tasks
+    // that were saved without a folder
     var selectedListId by remember {
-        mutableStateOf(task.listId)
+        mutableStateOf(task.listId ?: com.example.sp2.model.TaskList.GENERAL_FOLDER_ID)
     }
 
     var showListMenu by remember {
@@ -192,10 +193,7 @@ fun TaskDetailScreen(
                 val selectedListName =
                     taskLists.find {
                         it.id == selectedListId
-                    }?.name
-                        ?: stringResource(
-                            R.string.task_no_list
-                        )
+                    }?.name ?: ""
 
                 OutlinedButton(
                     onClick = {
@@ -214,20 +212,6 @@ fun TaskDetailScreen(
                         showListMenu = false
                     }
                 ) {
-
-                    DropdownMenuItem(
-                        text = {
-                            Text(
-                                stringResource(
-                                    R.string.task_no_list
-                                )
-                            )
-                        },
-                        onClick = {
-                            selectedListId = null
-                            showListMenu = false
-                        }
-                    )
 
                     taskLists.forEach { taskList ->
 

@@ -32,6 +32,12 @@ class TaskListViewModel(
             initialValue = emptyList()
         )
 
+    init {
+        viewModelScope.launch {
+            repository.ensureGeneralFolder()
+        }
+    }
+
     // Creates a new list
     fun addList(name: String) {
 

@@ -31,4 +31,9 @@ interface NoteDao {
     // Deletes a note
     @Delete
     suspend fun deleteNote(note: NoteEntity)
+
+    // Deletes every note that belongs to a folder, used when
+    // that folder itself is deleted
+    @Query("DELETE FROM notes WHERE listId = :listId")
+    suspend fun deleteNotesByListId(listId: Int)
 }

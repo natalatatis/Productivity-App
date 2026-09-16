@@ -30,23 +30,43 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sp2.R
+import com.example.sp2.model.NoteList
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import androidx.compose.foundation.clickable
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotesScreen(
     noteId: Int? = null,
+    initialListId: Int? = null,
     onBack: () -> Unit,
-    viewModel: NotesViewModel = viewModel()
+    viewModel: NotesViewModel = viewModel(),
+    noteListViewModel: NoteListViewModel = viewModel()
 ) {
+
+    val noteLists by noteListViewModel.noteLists.collectAsState()
 
     // Stores the ID after a new note is created
     var currentNoteId by rememberSaveable {
         mutableStateOf(noteId)
     }
+
+    // The folder this note belongs to. Starts as whatever folder it
+    // was created from (or General by default); overwritten once an
+    // existing note loads, so its own saved folder is respected
+    var noteListId by rememberSaveable {
+        mutableStateOf(initialListId ?: NoteList.GENERAL_FOLDER_ID)
+    }
+
+    var showFolderMenu by remember { mutableStateOf(false) }
 
     var title by rememberSaveable {
         mutableStateOf("")
@@ -83,14 +103,15 @@ fun NotesScreen(
                 title = note.title
                 content = note.content
                 noteDate = note.date
+                noteListId = note.listId ?: NoteList.GENERAL_FOLDER_ID
             }
 
             noteLoaded = true
         }
     }
 
-    // Autosaves whenever the title or content changes
-    LaunchedEffect(title, content, noteLoaded) {
+    // Autosaves whenever the title, content, or folder changes
+    LaunchedEffect(title, content, noteListId, noteLoaded) {
 
         if (!noteLoaded) {
             return@LaunchedEffect
@@ -105,6 +126,7 @@ fun NotesScreen(
             title = title,
             content = content,
             date = noteDate,
+            listId = noteListId,
             onNoteCreated = { newId ->
                 currentNoteId = newId
             }
@@ -115,9 +137,45 @@ fun NotesScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        text = stringResource(R.string.notes_title)
-                    )
+
+                    // Tapping the current folder name opens a picker —
+                    // this replaces the plain "Notes" title
+                    androidx.compose.foundation.layout.Box {
+
+                        androidx.compose.foundation.layout.Row(
+                            modifier = Modifier.clickable {
+                                showFolderMenu = true
+                            },
+                            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                        ) {
+
+                            Text(
+                                text = noteLists.find { it.id == noteListId }?.name
+                                    ?: stringResource(R.string.notes_title)
+                            )
+
+                            Icon(
+                                imageVector = Icons.Default.ArrowDropDown,
+                                contentDescription = null
+                            )
+                        }
+
+                        DropdownMenu(
+                            expanded = showFolderMenu,
+                            onDismissRequest = { showFolderMenu = false }
+                        ) {
+
+                            noteLists.forEach { noteList ->
+                                DropdownMenuItem(
+                                    text = { Text(noteList.name) },
+                                    onClick = {
+                                        noteListId = noteList.id
+                                        showFolderMenu = false
+                                    }
+                                )
+                            }
+                        }
+                    }
                 },
                 navigationIcon = {
                     IconButton(

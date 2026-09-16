@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Alarm
 import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
@@ -29,7 +30,8 @@ fun CreateActionDialog(
     onDismiss: () -> Unit,
     onCreateNote: () -> Unit,
     onCreateTask: () -> Unit,
-    onCreateHabit: () -> Unit
+    onCreateHabit: () -> Unit,
+    onCreateAlarm: () -> Unit
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -166,6 +168,45 @@ fun CreateActionDialog(
 
                             Text(
                                 text = stringResource(R.string.create_habit_description),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Create alarm
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable(onClick = onCreateAlarm),
+                    shape = MaterialTheme.shapes.large,
+                    color = MaterialTheme.colorScheme.surfaceContainer
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Alarm,
+                            contentDescription = null,
+                            modifier = Modifier.size(28.dp)
+                        )
+
+                        Column(
+                            modifier = Modifier.padding(start = 16.dp)
+                        ) {
+                            Text(
+                                text = stringResource(R.string.create_alarm),
+                                style = MaterialTheme.typography.titleMedium
+                            )
+
+                            Text(
+                                text = stringResource(R.string.create_alarm_description),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )

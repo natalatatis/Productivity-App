@@ -8,7 +8,15 @@ object Routes {
     const val SETTINGS = "settings"
 
     const val ADD_TASK = "add_task"
-    const val ADD_NOTE = "add_note"
+    const val ADD_NOTE = "add_note?listId={listId}"
+
+    fun addNote(listId: Int? = null): String {
+        return if (listId != null) {
+            "add_note?listId=$listId"
+        } else {
+            "add_note"
+        }
+    }
 
     const val MY_STUFF = "my_stuff"
     const val REMINDERS = "reminders"
@@ -23,6 +31,14 @@ object Routes {
 
     fun noteDetail(noteId: Int): String {
         return "note/$noteId"
+    }
+
+    const val TASK_FOLDERS = "task_folders"
+    const val NOTE_FOLDERS = "note_folders"
+    const val NOTE_FOLDER_DETAIL = "note_folder/{listId}"
+
+    fun noteFolderDetail(listId: Int): String {
+        return "note_folder/$listId"
     }
 
     // Task list routes

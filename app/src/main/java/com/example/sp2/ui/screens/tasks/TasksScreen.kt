@@ -15,17 +15,18 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.DriveFileMove
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.automirrored.filled.DriveFileMove
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -46,489 +47,151 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sp2.R
 import com.example.sp2.model.Task
+import com.example.sp2.model.TaskList
 import com.example.sp2.ui.components.EmptyState
 import com.example.sp2.ui.components.PriorityChip
-import com.example.sp2.ui.components.SectionHeader
 import com.example.sp2.ui.components.TaskListFolderCard
-import com.example.sp2.model.TaskList
 
-// Displays tasks and task lists
 @Composable
 fun TasksScreen(
     onAddTask: () -> Unit = {},
     onEditTask: (Int) -> Unit = {},
-    onOpenList: (Int) -> Unit = {},
+    onOpenFolders: () -> Unit = {},
     taskViewModel: TaskViewModel = viewModel(),
     taskListViewModel: TaskListViewModel = viewModel()
 ) {
 
-    // Tasks stored in Room
     val tasks by taskViewModel.tasks.collectAsState()
-
-    // Lists stored in Room
     val taskLists by taskListViewModel.taskLists.collectAsState()
 
-    // Tasks that do not belong to any list
-    val tasksWithoutList =
+    var taskToMove by remember { mutableStateOf<Task?>(null) }
+
+    var searchQuery by remember { mutableStateOf("") }
+
+    // Filters by title or description, keyword-only
+    val displayedTasks = if (searchQuery.isBlank()) {
+        tasks
+    } else {
         tasks.filter {
-            it.listId == null
+            it.title.contains(searchQuery, ignoreCase = true) ||
+                    it.description.contains(searchQuery, ignoreCase = true)
         }
-
-    // Controls new list dialog
-    var showNewListDialog by remember {
-        mutableStateOf(false)
-    }
-
-    var newListName by remember {
-        mutableStateOf("")
-    }
-
-    // Task selected for moving
-    var taskToMove by remember {
-        mutableStateOf<Task?>(null)
-    }
-
-    // List selected for deletion
-    var listToDelete by remember {
-        mutableStateOf<TaskList?>(null)
     }
 
     Scaffold(
         floatingActionButton = {
-
-            FloatingActionButton(
-                onClick = onAddTask
-            ) {
+            FloatingActionButton(onClick = onAddTask) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription =
-                        stringResource(
-                            R.string.task_add
-                        )
+                    contentDescription = stringResource(R.string.task_add)
                 )
             }
         }
     ) { paddingValues ->
 
-        LazyColumn(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 20.dp),
-            verticalArrangement =
-                Arrangement.spacedBy(12.dp)
         ) {
 
-            // Screen title
-            item {
-
-                Spacer(
-                    modifier = Modifier.height(20.dp)
-                )
-
-                SectionHeader(
-                    title =
-                        stringResource(
-                            R.string.tasks_title
-                        )
-                )
-
-                Spacer(
-                    modifier = Modifier.height(4.dp)
-                )
-            }
-
-            // No tasks and no lists
-            if (
-                tasks.isEmpty() &&
-                taskLists.isEmpty()
-            ) {
-
-                item {
-
-                    EmptyState(
-                        title =
-                            stringResource(
-                                R.string.tasks_empty_title
-                            ),
-                        description =
-                            stringResource(
-                                R.string.tasks_empty_description
-                            )
-                    )
-                }
-            }
-
-            // Tasks not assigned to a list
-            if (tasksWithoutList.isNotEmpty()) {
-
-                item {
-
-                    Text(
-                        text =
-                            stringResource(
-                                R.string.task_no_list
-                            ),
-                        style =
-                            MaterialTheme.typography.titleMedium
-                    )
-                }
-
-                items(
-                    items = tasksWithoutList,
-                    key = {
-                        "task_${it.id}"
-                    }
-                ) { task ->
-
-                    TaskRow(
-                        task = task,
-
-                        onEdit = {
-                            onEditTask(task.id)
-                        },
-
-                        onMove = {
-                            taskToMove = task
-                        },
-
-                        onToggle = {
-                            taskViewModel.toggleTask(task)
-                        },
-
-                        onDelete = {
-                            taskViewModel.deleteTask(task)
-                        }
-                    )
-                }
-            }
-
-            // Each folder, collapsed — its tasks are only shown
-            // after tapping it and opening TaskListDetailScreen
-            taskLists.forEach { taskList ->
-
-                val tasksForList =
-                    tasks.filter {
-                        it.listId == taskList.id
-                    }
-
-                item(
-                    key =
-                        "list_${taskList.id}"
-                ) {
-
-                    Spacer(
-                        modifier = Modifier.height(8.dp)
-                    )
-
-                    TaskListFolderCard(
-                        taskList = taskList,
-                        taskCount = tasksForList.size,
-
-                        onClick = {
-                            onOpenList(taskList.id)
-                        },
-
-                        onLongClick = {
-                            listToDelete = taskList
-                        }
-                    )
-                }
-            }
-
-            // Create new list
-            item {
-
-                TextButton(
-                    onClick = {
-                        showNewListDialog = true
-                    }
-                ) {
-
+            // Search bar, always visible, above the Folders entry
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                placeholder = { Text(stringResource(R.string.search_tasks)) },
+                leadingIcon = {
                     Icon(
-                        imageVector = Icons.Default.Add,
+                        imageVector = Icons.Default.Search,
                         contentDescription = null
                     )
+                },
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            )
 
-                    Text(
-                        text =
-                            stringResource(
-                                R.string.task_new_list
-                            )
+            // Entry point into the Folders section
+            Column(modifier = Modifier.padding(16.dp)) {
+
+                TaskListFolderCard(
+                    taskList = TaskList(id = -1, name = stringResource(R.string.task_folders_title)),
+                    taskCount = taskLists.size,
+                    onClick = onOpenFolders
+                )
+            }
+
+            // Every task, regardless of which folder it's in
+            if (displayedTasks.isEmpty()) {
+
+                Column(modifier = Modifier.padding(20.dp)) {
+                    EmptyState(
+                        title = stringResource(R.string.tasks_empty_title),
+                        description = stringResource(R.string.tasks_empty_description)
                     )
                 }
 
-                Spacer(
-                    modifier = Modifier.height(80.dp)
-                )
+            } else {
+
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+
+                    items(
+                        items = displayedTasks,
+                        key = { it.id }
+                    ) { task ->
+
+                        TaskRow(
+                            task = task,
+                            onEdit = { onEditTask(task.id) },
+                            onMove = { taskToMove = task },
+                            onToggle = { taskViewModel.toggleTask(task) },
+                            onDelete = { taskViewModel.deleteTask(task) }
+                        )
+                    }
+
+                    item { Spacer(modifier = Modifier.height(80.dp)) }
+                }
             }
         }
-    }
-
-    // Create list dialog
-    if (showNewListDialog) {
-
-        AlertDialog(
-            onDismissRequest = {
-                showNewListDialog = false
-                newListName = ""
-            },
-
-            title = {
-                Text(
-                    text =
-                        stringResource(
-                            R.string.task_new_list
-                        )
-                )
-            },
-
-            text = {
-
-                OutlinedTextField(
-                    value = newListName,
-
-                    onValueChange = {
-                        newListName = it
-                    },
-
-                    label = {
-                        Text(
-                            text =
-                                stringResource(
-                                    R.string.task_list_name
-                                )
-                        )
-                    },
-
-                    singleLine = true
-                )
-            },
-
-            confirmButton = {
-
-                Button(
-                    onClick = {
-
-                        taskListViewModel.addList(
-                            newListName
-                        )
-
-                        newListName = ""
-
-                        showNewListDialog = false
-                    },
-                    enabled =
-                        newListName.isNotBlank()
-                ) {
-
-                    Text(
-                        text =
-                            stringResource(
-                                R.string.action_create
-                            )
-                    )
-                }
-            },
-
-            dismissButton = {
-
-                TextButton(
-                    onClick = {
-                        newListName = ""
-                        showNewListDialog = false
-                    }
-                ) {
-
-                    Text(
-                        text =
-                            stringResource(
-                                R.string.action_cancel
-                            )
-                    )
-                }
-            }
-        )
     }
 
     // Move task dialog
     taskToMove?.let { task ->
 
         AlertDialog(
-            onDismissRequest = {
-                taskToMove = null
-            },
-
-            title = {
-                Text(
-                    text =
-                        stringResource(
-                            R.string.task_move
-                        )
-                )
-            },
-
+            onDismissRequest = { taskToMove = null },
+            title = { Text(stringResource(R.string.task_move)) },
             text = {
-
                 Column {
-
-                    // Move outside all lists
-                    TextButton(
-                        onClick = {
-
-                            taskViewModel.moveTaskToList(
-                                task = task,
-                                listId = null
-                            )
-
-                            taskToMove = null
-                        },
-                        modifier =
-                            Modifier.fillMaxWidth()
-                    ) {
-
-                        Text(
-                            text =
-                                stringResource(
-                                    R.string.task_no_list
-                                )
-                        )
-                    }
-
-                    // Move to one of the lists
                     taskLists.forEach { taskList ->
-
                         TextButton(
                             onClick = {
-
-                                taskViewModel.moveTaskToList(
-                                    task = task,
-                                    listId = taskList.id
-                                )
-
+                                taskViewModel.moveTaskToList(task = task, listId = taskList.id)
                                 taskToMove = null
                             },
-                            modifier =
-                                Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth()
                         ) {
-
-                            Text(
-                                text = taskList.name
-                            )
+                            Text(taskList.name)
                         }
                     }
                 }
             },
-
             confirmButton = {},
-
             dismissButton = {
-
-                TextButton(
-                    onClick = {
-                        taskToMove = null
-                    }
-                ) {
-
-                    Text(
-                        text =
-                            stringResource(
-                                R.string.action_cancel
-                            )
-                    )
-                }
-            }
-        )
-    }
-
-    // Confirms deletion of a task list
-    listToDelete?.let { taskList ->
-
-        val taskCount = tasks.count {
-            it.listId == taskList.id
-        }
-
-        AlertDialog(
-            onDismissRequest = {
-                listToDelete = null
-            },
-
-            title = {
-                Text(
-                    text = stringResource(
-                        R.string.task_delete_list_title
-                    )
-                )
-            },
-
-            text = {
-
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-
-                    Text(
-                        text = stringResource(
-                            R.string.task_delete_list_message,
-                            taskList.name
-                        )
-                    )
-
-                    if (taskCount > 0) {
-
-                        Text(
-                            text = stringResource(
-                                R.string.task_delete_list_warning,
-                                taskCount
-                            ),
-                            color = MaterialTheme.colorScheme.error
-                        )
-                    }
-                }
-            },
-
-            confirmButton = {
-
-                Button(
-                    onClick = {
-
-                        taskListViewModel.deleteList(
-                            taskList
-                        )
-
-                        listToDelete = null
-                    }
-                ) {
-
-                    Text(
-                        text = stringResource(
-                            R.string.task_delete_list_confirm
-                        )
-                    )
-                }
-            },
-
-            dismissButton = {
-
-                TextButton(
-                    onClick = {
-                        listToDelete = null
-                    }
-                ) {
-
-                    Text(
-                        text = stringResource(
-                            R.string.action_cancel
-                        )
-                    )
+                TextButton(onClick = { taskToMove = null }) {
+                    Text(stringResource(R.string.action_cancel))
                 }
             }
         )
     }
 }
 
-
-// Displays an individual task row
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun TaskRow(
@@ -539,10 +202,7 @@ private fun TaskRow(
     onDelete: () -> Unit
 ) {
 
-    // Controls long-press menu
-    var showMenu by remember {
-        mutableStateOf(false)
-    }
+    var showMenu by remember { mutableStateOf(false) }
 
     Box {
 
@@ -550,161 +210,71 @@ private fun TaskRow(
             modifier = Modifier
                 .fillMaxWidth()
                 .combinedClickable(
-                    onClick = {
-                        // Can later open task directly
-                    },
-                    onLongClick = {
-                        showMenu = true
-                    }
+                    onClick = {},
+                    onLongClick = { showMenu = true }
                 ),
-
             shape = RoundedCornerShape(20.dp),
-
-            color =
-                MaterialTheme.colorScheme
-                    .surfaceVariant
-                    .copy(alpha = 0.4f)
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
         ) {
 
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(12.dp),
-
-                verticalAlignment =
-                    Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically
             ) {
 
-                Checkbox(
-                    checked = task.completed,
-
-                    onCheckedChange = {
-                        onToggle()
-                    }
-                )
+                Checkbox(checked = task.completed, onCheckedChange = { onToggle() })
 
                 Column(
                     modifier = Modifier
                         .weight(1f)
                         .padding(horizontal = 8.dp),
-
-                    verticalArrangement =
-                        Arrangement.spacedBy(6.dp)
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
 
                     Text(
                         text = task.title,
-
-                        style =
-                            MaterialTheme.typography
-                                .titleMedium,
-
-                        textDecoration =
-                            if (task.completed) {
-                                TextDecoration.LineThrough
-                            } else {
-                                TextDecoration.None
-                            }
+                        style = MaterialTheme.typography.titleMedium,
+                        textDecoration = if (task.completed) {
+                            TextDecoration.LineThrough
+                        } else {
+                            TextDecoration.None
+                        }
                     )
 
-                    if (
-                        task.description.isNotBlank()
-                    ) {
-
-                        Text(
-                            text = task.description,
-                            style =
-                                MaterialTheme.typography
-                                    .bodyMedium
-                        )
+                    if (task.description.isNotBlank()) {
+                        Text(text = task.description, style = MaterialTheme.typography.bodyMedium)
                     }
 
-                    PriorityChip(
-                        priority = task.priority
-                    )
+                    PriorityChip(priority = task.priority)
                 }
             }
         }
 
-        // Long press options
         DropdownMenu(
             expanded = showMenu,
-
-            onDismissRequest = {
-                showMenu = false
-            }
+            onDismissRequest = { showMenu = false }
         ) {
 
-            // Edit
             DropdownMenuItem(
-                text = {
-                    Text(
-                        stringResource(
-                            R.string.task_edit
-                        )
-                    )
-                },
-
-                leadingIcon = {
-                    Icon(
-                        imageVector =
-                            Icons.Default.Edit,
-                        contentDescription = null
-                    )
-                },
-
-                onClick = {
-                    showMenu = false
-                    onEdit()
-                }
+                text = { Text(stringResource(R.string.task_edit)) },
+                leadingIcon = { Icon(Icons.Default.Edit, contentDescription = null) },
+                onClick = { showMenu = false; onEdit() }
             )
 
-            // Move
             DropdownMenuItem(
-                text = {
-                    Text(
-                        stringResource(
-                            R.string.task_move
-                        )
-                    )
-                },
-
+                text = { Text(stringResource(R.string.task_move)) },
                 leadingIcon = {
-                    Icon(
-                        imageVector =
-                            Icons.AutoMirrored.Filled.DriveFileMove,
-                        contentDescription = null
-                    )
+                    Icon(Icons.AutoMirrored.Filled.DriveFileMove, contentDescription = null)
                 },
-
-                onClick = {
-                    showMenu = false
-                    onMove()
-                }
+                onClick = { showMenu = false; onMove() }
             )
 
-            // Delete
             DropdownMenuItem(
-                text = {
-                    Text(
-                        stringResource(
-                            R.string.task_delete
-                        )
-                    )
-                },
-
-                leadingIcon = {
-                    Icon(
-                        imageVector =
-                            Icons.Default.Delete,
-                        contentDescription = null
-                    )
-                },
-
-                onClick = {
-                    showMenu = false
-                    onDelete()
-                }
+                text = { Text(stringResource(R.string.task_delete)) },
+                leadingIcon = { Icon(Icons.Default.Delete, contentDescription = null) },
+                onClick = { showMenu = false; onDelete() }
             )
         }
     }

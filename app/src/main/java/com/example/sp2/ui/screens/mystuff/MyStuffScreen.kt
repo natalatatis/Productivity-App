@@ -3,21 +3,23 @@ package com.example.sp2.ui.screens.mystuff
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.sp2.R
 import com.example.sp2.ui.screens.notes.NotesListScreen
 import com.example.sp2.ui.screens.tasks.TasksScreen
+import kotlinx.coroutines.launch
 
 @Composable
 fun MyStuffScreen(
@@ -25,78 +27,55 @@ fun MyStuffScreen(
     onAddNote: () -> Unit = {},
     onEditTask: (Int) -> Unit = {},
     onOpenNote: (Int) -> Unit = {},
-    onOpenList: (Int) -> Unit = {}
+    onOpenTaskFolders: () -> Unit = {},
+    onOpenNoteFolders: () -> Unit = {}
 ) {
 
-    // rememberSaveable keeps the selected tab across navigation,
-    // e.g. after creating a note or task and pressing back
-    var selectedTab by rememberSaveable {
-        mutableStateOf(0)
-    }
+    val pagerState = rememberPagerState(pageCount = { 2 })
+    val coroutineScope = rememberCoroutineScope()
 
-    Column(
-        modifier = Modifier.fillMaxSize()
-    ) {
+    Column(modifier = Modifier.fillMaxSize()) {
 
-        // Screen title
-        Text(
-            text = stringResource(R.string.my_stuff_title),
-            style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.padding(
-                horizontal = 20.dp,
-                vertical = 16.dp
-            )
-        )
-
-        // Tasks and Notes tabs
-        TabRow(
-            selectedTabIndex = selectedTab
-        ) {
+        // Tasks and Notes tabs — tapping jumps directly,
+        // swiping the content below also switches between them
+        TabRow(selectedTabIndex = pagerState.currentPage) {
 
             Tab(
-                selected = selectedTab == 0,
+                selected = pagerState.currentPage == 0,
                 onClick = {
-                    selectedTab = 0
+                    coroutineScope.launch { pagerState.animateScrollToPage(0) }
                 },
-                text = {
-                    Text(
-                        stringResource(
-                            R.string.my_stuff_tasks
-                        )
-                    )
-                }
+                text = { Text(stringResource(R.string.my_stuff_tasks)) }
             )
 
             Tab(
-                selected = selectedTab == 1,
+                selected = pagerState.currentPage == 1,
                 onClick = {
-                    selectedTab = 1
+                    coroutineScope.launch { pagerState.animateScrollToPage(1) }
                 },
-                text = {
-                    Text(
-                        stringResource(
-                            R.string.my_stuff_notes
-                        )
-                    )
-                }
+                text = { Text(stringResource(R.string.my_stuff_notes)) }
             )
         }
 
-        // Selected content
-        when (selectedTab) {
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxSize()
+        ) { page ->
 
-            // Tasks tab
-            0 -> TasksScreen(
-                onAddTask = onAddTask,
-                onEditTask = onEditTask,
-                onOpenList = onOpenList
-            )
+            when (page) {
 
-            // Notes tab
-            1 -> NotesListScreen(
-                onAddNote = onAddNote,
-                onOpenNote = onOpenNote
-            )
+                0 -> TasksScreen(
+                    onAddTask = onAddTask,
+                    onEditTask = onEditTask,
+                    onOpenFolders = onOpenTaskFolders
+                )
+
+                1 -> NotesListScreen(
+                    onAddNote = onAddNote,
+                    onOpenNote = onOpenNote,
+                    onOpenFolders = onOpenNoteFolders
+                )
+            }
         }
     }
 }
