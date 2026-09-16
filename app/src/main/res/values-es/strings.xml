@@ -149,4 +149,62 @@
     <string name="home_greeting_afternoon">Buenas tardes</string>
     <string name="home_greeting_night">Buenas noches</string>
 
+    <string name="create_habit">Nuevo hábito</string>
+    <string name="create_habit_description">Sigue una meta o racha</string>
+    <string name="habits_empty_title">Aún no hay hábitos</string>
+    <string name="habits_empty_description">Presiona + para agregar tu primer hábito</string>
+
+    <!-- Reminders -->
+    <string name="reminders_title">Recordatorios</string>
+    <string name="alarms_tab">Alarmas</string>
+    <string name="timer_tab">Temporizador</string>
+    <string name="alarm_new">Nueva alarma</string>
+    <string name="alarm_label">Etiqueta</string>
+    <string name="alarm_repeat">Repetir</string>
+    <string name="alarm_once">Una vez</string>
+    <string name="alarm_delete_title">¿Eliminar alarma?</string>
+    <string name="alarms_empty_title">Aún no hay alarmas</string>
+    <string name="alarms_empty_description">Presiona + para agregar tu primera alarma</string>
+    <string name="timer_countdown">Cuenta regresiva</string>
+    <string name="timer_stopwatch">Cronómetro</string>
+    <string name="timer_set_minutes">Minutos</string>
+    <string name="timer_start">Iniciar</string>
+    <string name="timer_pause">Pausar</string>
+    <string name="timer_reset">Reiniciar</string>
+
+    <string name="weekday_mon_letter">L</string>
+    <string name="weekday_tue_letter">M</string>
+    <string name="weekday_wed_letter">M</string>
+    <string name="weekday_thu_letter">J</string>
+    <string name="weekday_fri_letter">V</string>
+    <string name="weekday_sat_letter">S</string>
+    <string name="weekday_sun_letter">D</string>
+    <string name="alarm_use_manual">Escribir la hora</string>
+    <string name="alarm_sound">Sonido</string>
+    <string name="alarm_sound_default">Sonido de alarma predeterminado</string>
+    <string name="alarm_snooze_minutes">Duración de posponer (minutos)</string>
+
+    <string name="timer_lap">Vuelta</string>
+    <string name="timer_lap_number">Vuelta %1$d</string>
+
+    <string name="alarm_double_tap_hint">Toca dos veces la hora para cambiar de método</string>
+
+    <string name="alarm_snooze">Posponer</string>
+    <string name="alarm_dismiss">Descartar</string>
+    <string name="alarms_notification_channel">Alarmas</string>
+    <string name="alarms_notification_channel_description">Notificaciones de alarmas sonando</string>
+    <string name="alarm_permission_notifications_title">Activa las notificaciones</string>
+    <string name="alarm_permission_notifications_description">Necesario para que las alarmas te avisen</string>
+    <string name="alarm_permission_exact_title">Permite alarmas exactas</string>
+    <string name="alarm_permission_exact_description">Necesario para que suenen a la hora exacta</string>
+    <string name="alarm_permission_enable">Activar</string>
+
+    <string name="alarm_permission_fullscreen_title">Permite alertas de pantalla completa</string>
+    <string name="alarm_permission_fullscreen_description">Necesario para que la alarma se muestre sobre la pantalla bloqueada</string>
+
+    <string name="alarm_use_dial">Toca para usar el reloj</string>
+
+    <string name="alarm_edit">Editar alarma</string>
+    <string name="alarm_save">Guardar</string>
+
 </resources>

@@ -14,9 +14,11 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.sp2.ui.components.AppBottomBar
 import com.example.sp2.ui.screens.calendar.CalendarScreen
+import com.example.sp2.ui.screens.home.HabitViewModel
 import com.example.sp2.ui.screens.home.HomeScreen
 import com.example.sp2.ui.screens.mystuff.MyStuffScreen
 import com.example.sp2.ui.screens.notes.NotesScreen
+import com.example.sp2.ui.screens.reminders.RemindersScreen
 import com.example.sp2.ui.screens.settings.SettingsScreen
 import com.example.sp2.ui.screens.tasks.AddTaskScreen
 import com.example.sp2.ui.screens.tasks.TaskDetailScreen
@@ -40,6 +42,12 @@ fun AppNavigation() {
     val taskListViewModel:
             TaskListViewModel = viewModel()
 
+    // Shared habit ViewModel — needed both in Home and in the
+    // global "+" button, since creating a habit is a dialog,
+    // not a separate screen
+    val habitViewModel:
+            HabitViewModel = viewModel()
+
     // Room tasks
     val tasks by
     taskViewModel.tasks.collectAsState()
@@ -50,7 +58,10 @@ fun AppNavigation() {
 
     Scaffold(
         bottomBar = {
-            AppBottomBar(navController)
+            AppBottomBar(
+                navController = navController,
+                habitViewModel = habitViewModel
+            )
         }
     ) { innerPadding ->
 
@@ -71,8 +82,16 @@ fun AppNavigation() {
                             Routes.taskDetail(taskId)
                         )
                     },
+                    onAddTask = {
+                        navController.navigate(Routes.ADD_TASK)
+                    },
+                    onOpenReminders = {
+                        navController.navigate(Routes.REMINDERS)
+                    },
                     taskViewModel =
-                        taskViewModel
+                        taskViewModel,
+                    habitViewModel =
+                        habitViewModel
                 )
             }
 
@@ -207,6 +226,15 @@ fun AppNavigation() {
                 SettingsScreen()
             }
 
+            // Reminders
+            composable(Routes.REMINDERS) {
+                RemindersScreen(
+                    onBack = {
+                        navController.popBackStack()
+                    }
+                )
+            }
+
             // Add task
             composable(Routes.ADD_TASK) {
 
@@ -256,8 +284,7 @@ fun AppNavigation() {
                         taskLists =
                             taskLists,
 
-                        onSave = {
-                                updatedTask ->
+                        onSave = { updatedTask ->
 
                             taskViewModel.updateTask(
                                 updatedTask
@@ -317,8 +344,7 @@ fun AppNavigation() {
                                 .popBackStack()
                         },
 
-                        onEditTask = {
-                                taskId ->
+                        onEditTask = { taskId ->
 
                             navController.navigate(
                                 Routes.taskDetail(

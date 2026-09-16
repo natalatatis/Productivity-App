@@ -11,6 +11,7 @@ object Routes {
     const val ADD_NOTE = "add_note"
 
     const val MY_STUFF = "my_stuff"
+    const val REMINDERS = "reminders"
 
     // Task routes
     const val TASK_DETAIL = "task_detail/{taskId}"

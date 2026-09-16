@@ -163,6 +163,39 @@ object DatabaseProvider {
         }
     }
 
+    private val MIGRATION_7_8 = object : Migration(7, 8) {
+
+        override fun migrate(db: SupportSQLiteDatabase) {
+
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS `alarms` (
+                    `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                    `hour` INTEGER NOT NULL,
+                    `minute` INTEGER NOT NULL,
+                    `label` TEXT NOT NULL DEFAULT '',
+                    `days` TEXT NOT NULL DEFAULT '',
+                    `enabled` INTEGER NOT NULL DEFAULT 1
+                )
+                """.trimIndent()
+            )
+        }
+    }
+
+    private val MIGRATION_8_9 = object : Migration(8, 9) {
+
+        override fun migrate(db: SupportSQLiteDatabase) {
+
+            db.execSQL(
+                "ALTER TABLE `alarms` ADD COLUMN `soundUri` TEXT DEFAULT NULL"
+            )
+
+            db.execSQL(
+                "ALTER TABLE `alarms` ADD COLUMN `snoozeMinutes` INTEGER NOT NULL DEFAULT 10"
+            )
+        }
+    }
+
     fun getDatabase(context: Context): AppDatabase {
 
         return INSTANCE ?: synchronized(this) {
@@ -178,7 +211,9 @@ object DatabaseProvider {
                     MIGRATION_3_4,
                     MIGRATION_4_5,
                     MIGRATION_5_6,
-                    MIGRATION_6_7
+                    MIGRATION_6_7,
+                    MIGRATION_7_8,
+                    MIGRATION_8_9
                 )
                 .build()
 

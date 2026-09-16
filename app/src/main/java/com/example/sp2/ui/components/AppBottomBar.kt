@@ -20,6 +20,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.sp2.R
 import com.example.sp2.navigation.Routes
+import com.example.sp2.ui.screens.home.HabitViewModel
 
 // Represents an item in the bottom navigation bar
 data class BottomNavItem(
@@ -30,10 +31,17 @@ data class BottomNavItem(
 
 @Composable
 fun AppBottomBar(
-    navController: NavHostController
+    navController: NavHostController,
+    habitViewModel: HabitViewModel
 ) {
     // Controls whether the create dialog is visible
     var showCreateDialog by remember {
+        mutableStateOf(false)
+    }
+
+    // Controls the "new habit" dialog, shown directly from here
+    // since creating a habit isn't a navigable screen
+    var showCreateHabitDialog by remember {
         mutableStateOf(false)
     }
 
@@ -114,6 +122,32 @@ fun AppBottomBar(
             onCreateTask = {
                 showCreateDialog = false
                 navController.navigate(Routes.ADD_TASK)
+            },
+            onCreateHabit = {
+                showCreateDialog = false
+                showCreateHabitDialog = true
+            }
+        )
+    }
+
+    // Create habit dialog
+    if (showCreateHabitDialog) {
+        CreateHabitDialog(
+            onDismiss = {
+                showCreateHabitDialog = false
+            },
+            onCreate = { name, type, frequency, targetCount, durationType, totalPeriods ->
+
+                habitViewModel.addHabit(
+                    name = name,
+                    type = type,
+                    frequency = frequency,
+                    targetCount = targetCount,
+                    durationType = durationType,
+                    totalPeriods = totalPeriods
+                )
+
+                showCreateHabitDialog = false
             }
         )
     }
