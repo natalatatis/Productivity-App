@@ -31,12 +31,13 @@
     <string name="task_cancel">Cancelar</string>
     <string name="task_add_description">Agregar una descripción</string>
     <string name="task_mark_done">Marcar como terminado</string>
-    <string name="task_list">Lista</string>
-    <string name="task_no_list">Sin lista</string>
+    <string name="task_list">Carpeta</string>
+    <string name="task_no_list">Sin carpeta</string>
     <string name="task_move">Mover</string>
-    <string name="task_new_list">Nueva lista</string>
-    <string name="task_list_name">Nombre de la lista</string>
+    <string name="task_new_list">Nueva carpeta</string>
+    <string name="task_list_name">Nombre de la carpeta</string>
     <string name="action_create">Crear</string>
+    <string name="task_folder_count">%1$d tareas</string>
 
     <!-- Common priorities -->
     <string name="priority_low">Baja</string>
@@ -94,14 +95,14 @@
     <!-- Notes -->
     <string name="notes_title">Notas</string>
     <string name="note_title">Título</string>
-    <string name="note_content_placeholder">Empieza a escribir...</string>
+    <string name="note_content_placeholder">Empieza a escribir…</string>
     <string name="note_save">Guardar</string>
 
-    <!-- My Stuff -->
-    <string name="my_stuff_title">Mis cosas</string>
+    <!-- Hub -->
+    <string name="my_stuff_title">Hub</string>
     <string name="my_stuff_tasks">Tareas</string>
     <string name="my_stuff_notes">Notas</string>
-    <string name="nav_my_stuff">Mis cosas</string>
+    <string name="nav_my_stuff">Hub</string>
 
     <!-- Notes -->
     <string name="note_add">Agregar nota</string>
@@ -117,9 +118,35 @@
     <string name="create_task">Nueva tarea</string>
     <string name="create_task_description">Agrega algo a tus tareas</string>
 
-    <string name="task_delete_list_title">¿Eliminar lista?</string>
+    <string name="task_delete_list_title">¿Eliminar carpeta?</string>
     <string name="task_delete_list_message">¿Estás seguro de que deseas eliminar "%1$s"?</string>
-    <string name="task_delete_list_warning">También se eliminarán permanentemente las %1$d tareas dentro de esta lista.</string>
+    <string name="task_delete_list_warning">También se eliminarán permanentemente las %1$d tareas dentro de esta carpeta.</string>
     <string name="task_delete_list_confirm">Eliminar</string>
+
+    <!-- Habits -->
+    <string name="habits_title">Hábitos</string>
+    <string name="habit_new">Nuevo hábito</string>
+    <string name="habit_name">Nombre del hábito</string>
+    <string name="habit_type">Tipo</string>
+    <string name="habit_type_checkoff">Sí / No</string>
+    <string name="habit_type_counter">Contador</string>
+    <string name="habit_frequency">Frecuencia</string>
+    <string name="habit_frequency_daily">Diario</string>
+    <string name="habit_frequency_weekly">Semanal</string>
+    <string name="habit_frequency_monthly">Mensual</string>
+    <string name="habit_target">Meta</string>
+    <string name="habit_delete_title">¿Eliminar hábito?</string>
+    <string name="habit_delete_message">¿Estás seguro de que deseas eliminar "%1$s"? Se perderá su racha.</string>
+    <string name="habit_duration">Duración</string>
+    <string name="habit_duration_indefinite">Indefinido</string>
+    <string name="habit_duration_fixed">Duración fija (ej. un reto)</string>
+    <string name="habit_duration_days">Número de días</string>
+    <string name="habit_duration_weeks">Número de semanas</string>
+    <string name="habit_duration_months">Número de meses</string>
+    <string name="habit_challenge_finished">Reto completado</string>
+
+    <string name="home_greeting_morning">Buenos días</string>
+    <string name="home_greeting_afternoon">Buenas tardes</string>
+    <string name="home_greeting_night">Buenas noches</string>
 
 </resources>

@@ -1,6 +1,7 @@
 package com.example.sp2.ui.components
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,40 +9,73 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.example.sp2.R
+import com.example.sp2.model.Habit
+import com.example.sp2.model.HabitDurationType
+import com.example.sp2.model.HabitFrequency
+import com.example.sp2.model.HabitType
 
-// Displays weekly progress for a habit
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HabitProgressCard(
-    name: String,
-    completedDays: List<Boolean>,
-    onClick: () -> Unit
+    habit: Habit,
+    onIncrement: () -> Unit,
+    onDecrement: () -> Unit,
+    onLongClick: () -> Unit = {}
 ) {
 
-    val completedCount = completedDays.count { it }
+    // Counter habits: % of the current period's goal.
+    // Fixed-duration Yes/No habits: % of the challenge elapsed.
+    // Indefinite Yes/No habits: no percentage at all, just the streak.
+    val percentage: Int? = when {
 
-    val percentage = if (completedDays.isNotEmpty()) {
-        (completedCount * 100) / completedDays.size
-    } else {
-        0
+        habit.type == HabitType.COUNTER -> {
+            if (habit.targetCount > 0) {
+                ((habit.currentCount * 100) / habit.targetCount)
+                    .coerceAtMost(100)
+            } else {
+                0
+            }
+        }
+
+        habit.type == HabitType.CHECKOFF &&
+                habit.durationType == HabitDurationType.FIXED &&
+                habit.totalPeriods != null -> {
+
+            if (habit.totalPeriods > 0) {
+                ((habit.periodsElapsed * 100) / habit.totalPeriods)
+                    .coerceAtMost(100)
+            } else {
+                0
+            }
+        }
+
+        else -> null
     }
 
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
+            .combinedClickable(
+                onClick = {},
+                onLongClick = onLongClick
+            ),
         shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(
-            alpha = 0.4f
-        )
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
     ) {
 
         Row(
@@ -51,49 +85,138 @@ fun HabitProgressCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
 
-            // Habit information
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
+            Column(modifier = Modifier.weight(1f)) {
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+
+                    // Percentage only makes sense for counter-based
+                    // habits — a yes/no habit is either done or not
+                    if (percentage != null) {
+                        Text(
+                            text = "$percentage%",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    if (habit.streak > 0) {
+                        Text(
+                            text = "\uD83D\uDD25 ${habit.streak}",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
 
                 Text(
-                    text = "$percentage%",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-
-                Text(
-                    text = name,
+                    text = habit.name,
                     style = MaterialTheme.typography.titleMedium
                 )
+
+                Text(
+                    text = statusLabel(habit),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                // Accumulated hits/misses counter
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+
+                    Text(
+                        text = "✓ ${habit.totalHits}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+
+                    Text(
+                        text = "✕ ${habit.totalMisses}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
             }
 
-            // Weekly completion
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            // Interaction area
+            if (habit.isChallengeFinished) {
 
-                completedDays.forEach { completed ->
+                Icon(
+                    imageVector = Icons.Filled.CheckCircle,
+                    contentDescription = stringResource(
+                        R.string.habit_challenge_finished
+                    ),
+                    tint = MaterialTheme.colorScheme.primary
+                )
 
-                    if (completed) {
+            } else if (habit.type == HabitType.CHECKOFF) {
 
+                IconButton(
+                    onClick = {
+                        if (habit.isCompleted) {
+                            onDecrement()
+                        } else {
+                            onIncrement()
+                        }
+                    }
+                ) {
+                    Icon(
+                        imageVector = if (habit.isCompleted) {
+                            Icons.Filled.CheckCircle
+                        } else {
+                            Icons.Outlined.CheckCircle
+                        },
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+
+            } else {
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+
+                    IconButton(onClick = onDecrement) {
                         Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary
+                            imageVector = Icons.Default.Remove,
+                            contentDescription = null
                         )
+                    }
 
-                    } else {
+                    Text(
+                        text = "${habit.currentCount}/${habit.targetCount}",
+                        style = MaterialTheme.typography.titleMedium
+                    )
 
-                        Text(
-                            text = "○",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                    IconButton(onClick = onIncrement) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = null
                         )
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun statusLabel(habit: Habit): String {
+
+    val frequency = when (habit.frequency) {
+        HabitFrequency.DAILY -> stringResource(R.string.habit_frequency_daily)
+        HabitFrequency.WEEKLY -> stringResource(R.string.habit_frequency_weekly)
+        HabitFrequency.MONTHLY -> stringResource(R.string.habit_frequency_monthly)
+    }
+
+    return if (
+        habit.durationType == HabitDurationType.FIXED &&
+        habit.totalPeriods != null
+    ) {
+        "$frequency · ${habit.periodsElapsed}/${habit.totalPeriods}"
+    } else {
+        frequency
     }
 }

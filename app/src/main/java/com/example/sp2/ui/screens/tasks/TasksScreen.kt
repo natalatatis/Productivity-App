@@ -17,7 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.DriveFileMove
+import androidx.compose.material.icons.automirrored.filled.DriveFileMove
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -203,7 +203,8 @@ fun TasksScreen(
                 }
             }
 
-            // Each list and its tasks
+            // Each folder, collapsed — its tasks are only shown
+            // after tapping it and opening TaskListDetailScreen
             taskLists.forEach { taskList ->
 
                 val tasksForList =
@@ -232,42 +233,6 @@ fun TasksScreen(
                             listToDelete = taskList
                         }
                     )
-                }
-
-                items(
-                    items = tasksForList,
-                    key = {
-                        "task_${it.id}"
-                    }
-                ) { task ->
-
-                    Box(
-                        modifier =
-                            Modifier.padding(
-                                start = 16.dp
-                            )
-                    ) {
-
-                        TaskRow(
-                            task = task,
-
-                            onEdit = {
-                                onEditTask(task.id)
-                            },
-
-                            onMove = {
-                                taskToMove = task
-                            },
-
-                            onToggle = {
-                                taskViewModel.toggleTask(task)
-                            },
-
-                            onDelete = {
-                                taskViewModel.deleteTask(task)
-                            }
-                        )
-                    }
                 }
             }
 
@@ -707,7 +672,7 @@ private fun TaskRow(
                 leadingIcon = {
                     Icon(
                         imageVector =
-                            Icons.Default.DriveFileMove,
+                            Icons.AutoMirrored.Filled.DriveFileMove,
                         contentDescription = null
                     )
                 },

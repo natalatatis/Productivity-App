@@ -14,10 +14,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -25,9 +28,14 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -37,7 +45,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sp2.R
+import com.example.sp2.model.Habit
 import com.example.sp2.model.Task
+import com.example.sp2.ui.components.CreateHabitDialog
 import com.example.sp2.ui.components.EmptyState
 import com.example.sp2.ui.components.HabitProgressCard
 import com.example.sp2.ui.components.HabitStreakCard
@@ -45,18 +55,45 @@ import com.example.sp2.ui.components.PriorityChip
 import com.example.sp2.ui.components.SectionHeader
 import com.example.sp2.ui.screens.tasks.TaskViewModel
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 @Composable
 fun HomeScreen(
     onEditTask: (Int) -> Unit = {},
-    taskViewModel: TaskViewModel = viewModel()
+    taskViewModel: TaskViewModel = viewModel(),
+    habitViewModel: HabitViewModel = viewModel(),
+    appUsageViewModel: AppUsageViewModel = viewModel()
 ) {
 
     // Observes the tasks stored in Room
     val tasks by taskViewModel.tasks.collectAsState()
 
-    // Gets today's date
+    // Observes the habits stored in Room
+    val habits by habitViewModel.habits.collectAsState()
+
+    // Observes the app-usage streak
+    val usage by appUsageViewModel.usage.collectAsState()
+
+    // Re-checks the app-usage streak every time Home becomes the
+    // visible destination — fires on every visit, not just the first
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    DisposableEffect(lifecycleOwner) {
+
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                appUsageViewModel.refresh()
+            }
+        }
+
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
     val today = LocalDate.now()
 
     // Only displays today's incomplete tasks
@@ -64,52 +101,18 @@ fun HomeScreen(
         it.date == today && !it.completed
     }
 
-    // Temporary weekly habit data
-    var exerciseDays by remember {
-        mutableStateOf(
-            listOf(
-                true,
-                true,
-                false,
-                true,
-                false,
-                false,
-                false
-            )
-        )
-    }
-
-    var readingDays by remember {
-        mutableStateOf(
-            listOf(
-                true,
-                true,
-                true,
-                false,
-                true,
-                false,
-                false
-            )
-        )
-    }
-
-    var walkingDays by remember {
-        mutableStateOf(
-            listOf(
-                false,
-                true,
-                true,
-                true,
-                false,
-                false,
-                false
-            )
-        )
-    }
-
-    // Keeps track of which task is currently expanded
     var expandedTaskId by remember {
         mutableStateOf<Int?>(null)
+    }
+
+    // Controls the "new habit" dialog
+    var showCreateHabitDialog by remember {
+        mutableStateOf(false)
+    }
+
+    // Habit selected for deletion
+    var habitToDelete by remember {
+        mutableStateOf<Habit?>(null)
     }
 
     LazyColumn(
@@ -118,84 +121,58 @@ fun HomeScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
 
-        // Greeting
+        // Greeting, based on the current time of day
         item {
             Text(
-                text = stringResource(R.string.home_greeting),
+                text = stringResource(greetingStringRes()),
                 style = MaterialTheme.typography.headlineMedium
             )
         }
 
-        // General streak
+        // App usage streak
         item {
-            HabitStreakCard(
-                streak = 7
-            )
+            HabitStreakCard(usage = usage)
         }
 
         // Habits section
         item {
             SectionHeader(
-                title = "Habits"
+                title = stringResource(R.string.habits_title)
             )
         }
 
-        // Weekly habit progress
+        // Real, persisted habits
+        items(
+            items = habits,
+            key = { "habit_${it.id}" }
+        ) { habit ->
+
+            HabitProgressCard(
+                habit = habit,
+                onIncrement = {
+                    habitViewModel.increment(habit)
+                },
+                onDecrement = {
+                    habitViewModel.decrement(habit)
+                },
+                onLongClick = {
+                    habitToDelete = habit
+                }
+            )
+        }
+
+        // Button to create a new habit
         item {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+            TextButton(
+                onClick = {
+                    showCreateHabitDialog = true
+                }
             ) {
-
-                HabitProgressCard(
-                    name = "Exercise",
-                    completedDays = exerciseDays,
-                    onClick = {
-
-                        // Temporary behavior:
-                        // toggles the last day in the week
-                        exerciseDays =
-                            exerciseDays.toMutableList().also {
-                                val lastIndex = it.lastIndex
-
-                                it[lastIndex] =
-                                    !it[lastIndex]
-                            }
-                    }
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = null
                 )
-
-                HabitProgressCard(
-                    name = "Read",
-                    completedDays = readingDays,
-                    onClick = {
-
-                        // Temporary behavior:
-                        // toggles the last day in the week
-                        readingDays =
-                            readingDays.toMutableList().also {
-                                val lastIndex = it.lastIndex
-
-                                it[lastIndex] =
-                                    !it[lastIndex]
-                            }
-                    }
-                )
-
-                HabitProgressCard(
-                    name = "Walk",
-                    completedDays = walkingDays,
-                    onClick = {
-
-                        // Temporary behavior:
-                        // toggles the last day in the week
-                        walkingDays =
-                            walkingDays.toMutableList().also {
-                                val lastIndex = it.lastIndex
-
-                                it[lastIndex] =
-                                    !it[lastIndex]
-                            }
-                    }
-                )
+                Text(text = stringResource(R.string.habit_new))
             }
         }
 
@@ -206,23 +183,17 @@ fun HomeScreen(
             )
         }
 
-        // Shows a message when there are no tasks for today
         if (todayTasks.isEmpty()) {
 
             item {
                 EmptyState(
-                    title = stringResource(
-                        R.string.tasks_empty_title
-                    ),
-                    description = stringResource(
-                        R.string.tasks_empty_description
-                    )
+                    title = stringResource(R.string.tasks_empty_title),
+                    description = stringResource(R.string.tasks_empty_description)
                 )
             }
 
         } else {
 
-            // Displays today's tasks
             items(
                 items = todayTasks,
                 key = { it.id }
@@ -231,34 +202,92 @@ fun HomeScreen(
                 TaskCard(
                     task = task,
                     isExpanded = expandedTaskId == task.id,
-
-                    // Expands or collapses the task card
                     onToggleExpand = {
-                        expandedTaskId =
-                            if (expandedTaskId == task.id) {
-                                null
-                            } else {
-                                task.id
-                            }
+                        expandedTaskId = if (expandedTaskId == task.id) {
+                            null
+                        } else {
+                            task.id
+                        }
                     },
-
-                    // Opens the task editor
                     onEdit = {
                         onEditTask(task.id)
                     },
-
-                    // Deletes the task from Room
                     onDelete = {
                         taskViewModel.deleteTask(task)
                     },
-
-                    // Marks the task as complete
                     onToggleComplete = {
                         taskViewModel.toggleTask(task)
                     }
                 )
             }
         }
+    }
+
+    // Create habit dialog
+    if (showCreateHabitDialog) {
+
+        CreateHabitDialog(
+            onDismiss = {
+                showCreateHabitDialog = false
+            },
+            onCreate = { name, type, frequency, targetCount, durationType, totalPeriods ->
+
+                habitViewModel.addHabit(
+                    name = name,
+                    type = type,
+                    frequency = frequency,
+                    targetCount = targetCount,
+                    durationType = durationType,
+                    totalPeriods = totalPeriods
+                )
+
+                showCreateHabitDialog = false
+            }
+        )
+    }
+
+    // Confirms deletion of a habit
+    habitToDelete?.let { habit ->
+
+        AlertDialog(
+            onDismissRequest = {
+                habitToDelete = null
+            },
+            title = {
+                Text(text = stringResource(R.string.habit_delete_title))
+            },
+            text = {
+                Text(
+                    text = stringResource(
+                        R.string.habit_delete_message,
+                        habit.name
+                    )
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        habitViewModel.deleteHabit(habit)
+                        habitToDelete = null
+                    }
+                ) {
+                    Text(
+                        text = stringResource(
+                            R.string.task_delete_list_confirm
+                        )
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        habitToDelete = null
+                    }
+                ) {
+                    Text(text = stringResource(R.string.action_cancel))
+                }
+            }
+        )
     }
 }
 
@@ -273,14 +302,12 @@ private fun TaskCard(
     onToggleComplete: () -> Unit
 ) {
 
-    // Controls the visibility of the edit/delete menu
     var showMenu by remember {
         mutableStateOf(false)
     }
 
     Box {
 
-        // Rounded task card
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
@@ -306,10 +333,7 @@ private fun TaskCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
 
-                    // Marks the task as completed
-                    IconButton(
-                        onClick = onToggleComplete
-                    ) {
+                    IconButton(onClick = onToggleComplete) {
                         Icon(
                             imageVector = if (task.completed) {
                                 Icons.Filled.CheckCircle
@@ -323,7 +347,6 @@ private fun TaskCard(
                         )
                     }
 
-                    // Task title
                     Text(
                         text = task.title,
                         style = MaterialTheme.typography.titleMedium,
@@ -331,30 +354,17 @@ private fun TaskCard(
                     )
                 }
 
-                // Task priority
-                Row(
-                    modifier = Modifier.padding(
-                        start = 48.dp
-                    )
-                ) {
-                    PriorityChip(
-                        priority = task.priority
-                    )
+                Row(modifier = Modifier.padding(start = 48.dp)) {
+                    PriorityChip(priority = task.priority)
                 }
 
-                // Extra task information
                 if (isExpanded) {
 
                     Column(
-                        modifier = Modifier.padding(
-                            start = 48.dp
-                        ),
-                        verticalArrangement = Arrangement.spacedBy(
-                            4.dp
-                        )
+                        modifier = Modifier.padding(start = 48.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
 
-                        // Description
                         if (task.description.isNotEmpty()) {
                             Text(
                                 text = task.description,
@@ -362,25 +372,15 @@ private fun TaskCard(
                             )
                         }
 
-                        // Date and time
-                        if (
-                            task.date != null ||
-                            task.time != null
-                        ) {
+                        if (task.date != null || task.time != null) {
 
-                            val dateText =
-                                task.date?.format(
-                                    DateTimeFormatter.ofPattern(
-                                        "dd/MM/yyyy"
-                                    )
-                                ) ?: ""
+                            val dateText = task.date?.format(
+                                DateTimeFormatter.ofPattern("dd/MM/yyyy")
+                            ) ?: ""
 
-                            val timeText =
-                                task.time?.format(
-                                    DateTimeFormatter.ofPattern(
-                                        "HH:mm"
-                                    )
-                                ) ?: ""
+                            val timeText = task.time?.format(
+                                DateTimeFormatter.ofPattern("HH:mm")
+                            ) ?: ""
 
                             Text(
                                 text = "$dateText $timeText".trim(),
@@ -393,7 +393,6 @@ private fun TaskCard(
             }
         }
 
-        // Menu shown when the task card is long pressed
         DropdownMenu(
             expanded = showMenu,
             onDismissRequest = {
@@ -401,20 +400,12 @@ private fun TaskCard(
             }
         ) {
 
-            // Edit option
             DropdownMenuItem(
                 text = {
-                    Text(
-                        stringResource(
-                            R.string.task_edit
-                        )
-                    )
+                    Text(stringResource(R.string.task_edit))
                 },
                 leadingIcon = {
-                    Icon(
-                        Icons.Default.Edit,
-                        contentDescription = null
-                    )
+                    Icon(Icons.Default.Edit, contentDescription = null)
                 },
                 onClick = {
                     showMenu = false
@@ -422,20 +413,12 @@ private fun TaskCard(
                 }
             )
 
-            // Delete option
             DropdownMenuItem(
                 text = {
-                    Text(
-                        stringResource(
-                            R.string.task_delete
-                        )
-                    )
+                    Text(stringResource(R.string.task_delete))
                 },
                 leadingIcon = {
-                    Icon(
-                        Icons.Default.Delete,
-                        contentDescription = null
-                    )
+                    Icon(Icons.Default.Delete, contentDescription = null)
                 },
                 onClick = {
                     showMenu = false
@@ -443,5 +426,15 @@ private fun TaskCard(
                 }
             )
         }
+    }
+}
+
+// Picks the right greeting based on the current time of day
+private fun greetingStringRes(): Int {
+    val hour = LocalTime.now().hour
+    return when (hour) {
+        in 5..11 -> R.string.home_greeting_morning
+        in 12..18 -> R.string.home_greeting_afternoon
+        else -> R.string.home_greeting_night
     }
 }

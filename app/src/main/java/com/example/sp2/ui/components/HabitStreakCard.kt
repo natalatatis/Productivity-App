@@ -13,7 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -22,137 +22,103 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.example.sp2.R
+import com.example.sp2.model.AppUsage
 
-// Displays the user's current habit streak and the progress of the last seven days
 @Composable
 fun HabitStreakCard(
-    streak: Int = 7,
-
-    // Indicates whether the habit was completed for each of the seven days
-    completedDays: List<Boolean> = listOf(
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true
-    )
+    usage: AppUsage
 ) {
 
-    // Main container for the habit streak card
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
         color = MaterialTheme.colorScheme.primaryContainer
     ) {
 
-        Column(
-            modifier = Modifier.padding(20.dp)
-        ) {
+        Column(modifier = Modifier.padding(20.dp)) {
 
-            // Displays the streak icon and current streak information
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
 
-                // Circular background for the streak icon
                 Box(
                     modifier = Modifier
                         .size(48.dp)
                         .clip(CircleShape)
-                        .background(
-                            MaterialTheme.colorScheme.primary
-                        ),
+                        .background(MaterialTheme.colorScheme.primary),
                     contentAlignment = Alignment.Center
                 ) {
-
-                    // Icon representing completed habits
                     Icon(
-                        imageVector = Icons.Default.CheckCircle,
-                        contentDescription = "Habit streak",
+                        imageVector = Icons.Default.LocalFireDepartment,
+                        contentDescription = null,
                         tint = MaterialTheme.colorScheme.onPrimary
                     )
                 }
 
-                Spacer(
-                    modifier = Modifier.size(12.dp)
-                )
+                Spacer(modifier = Modifier.size(12.dp))
 
-                // Displays the number of consecutive days and a message
                 Column {
-
                     Text(
                         text = stringResource(
                             R.string.home_day_streak,
-                            streak
+                            usage.streak
                         ),
                         style = MaterialTheme.typography.titleLarge
                     )
-
                     Text(
-                        text = stringResource(
-                            R.string.home_keep_going
-                        ),
+                        text = stringResource(R.string.home_keep_going),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
             }
 
-            Spacer(
-                modifier = Modifier.height(20.dp)
+            Spacer(modifier = Modifier.height(20.dp))
+
+            val weekdayLabels = listOf(
+                stringResource(R.string.weekday_mon),
+                stringResource(R.string.weekday_tue),
+                stringResource(R.string.weekday_wed),
+                stringResource(R.string.weekday_thu),
+                stringResource(R.string.weekday_fri),
+                stringResource(R.string.weekday_sat),
+                stringResource(R.string.weekday_sun)
             )
 
-            // Displays the progress for each day of the week
+            // Current week, Monday to Sunday — same layout as Calendar
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
 
-                // Labels for the seven days of the week
-                val days = listOf(
-                    "M", "T", "W", "T", "F", "S", "S"
-                )
+                usage.weekUsage.forEachIndexed { index, used ->
 
-                // Creates one progress indicator for each day
-                days.forEachIndexed { index, day ->
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
 
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-
-                        // Displays the day label
                         Text(
-                            text = day,
-                            style = MaterialTheme.typography.labelMedium,
+                            text = weekdayLabels[index],
+                            style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
 
-                        Spacer(
-                            modifier = Modifier.height(6.dp)
-                        )
+                        Spacer(modifier = Modifier.height(6.dp))
 
-                        // Circle showing whether the habit was completed
                         Box(
                             modifier = Modifier
                                 .size(28.dp)
                                 .clip(CircleShape)
                                 .background(
-                                    if (completedDays.getOrElse(index) { false }) {
-                                        MaterialTheme.colorScheme.primary
-                                    } else {
-                                        MaterialTheme.colorScheme.surface
+                                    when (used) {
+                                        true -> MaterialTheme.colorScheme.primary
+                                        false -> MaterialTheme.colorScheme.surface
+                                        null -> MaterialTheme.colorScheme.surface.copy(alpha = 0.4f)
                                     }
                                 ),
                             contentAlignment = Alignment.Center
                         ) {
 
-                            // Shows a checkmark when the habit was completed
-                            if (completedDays.getOrElse(index) { false }) {
+                            if (used == true) {
                                 Text(
                                     text = "✓",
                                     color = MaterialTheme.colorScheme.onPrimary,
@@ -166,4 +132,3 @@ fun HabitStreakCard(
         }
     }
 }
-

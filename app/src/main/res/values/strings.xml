@@ -31,12 +31,13 @@
     <string name="task_cancel">Cancel</string>
     <string name="task_add_description">Add a description</string>
     <string name="task_mark_done">Mark done</string>
-    <string name="task_list">List</string>
-    <string name="task_no_list">No List</string>
+    <string name="task_list">Folder</string>
+    <string name="task_no_list">No Folder</string>
     <string name="task_move">Move</string>
-    <string name="task_new_list">New List</string>
-    <string name="task_list_name">List name</string>
+    <string name="task_new_list">New Folder</string>
+    <string name="task_list_name">Folder name</string>
     <string name="action_create">Create</string>
+    <string name="task_folder_count">%1$d tasks</string>
 
     <!-- Common priorities -->
     <string name="priority_low">Low</string>
@@ -94,14 +95,15 @@
     <!-- Notes -->
     <string name="notes_title">Notes</string>
     <string name="note_title">Title</string>
-    <string name="note_content_placeholder">Start writing...</string>
+    <string name="note_content_placeholder">Start writing…</string>
     <string name="note_save">Save</string>
 
     <!-- My Stuff -->
-    <string name="my_stuff_title">My Stuff</string>
+    <!-- Hub -->
+    <string name="my_stuff_title">Hub</string>
     <string name="my_stuff_tasks">Tasks</string>
     <string name="my_stuff_notes">Notes</string>
-    <string name="nav_my_stuff">My Stuff</string>
+    <string name="nav_my_stuff">Hub</string>
 
     <!-- Notes -->
     <string name="note_add">Add note</string>
@@ -117,9 +119,35 @@
     <string name="create_task">New task</string>
     <string name="create_task_description">Add something to your tasks</string>
 
-    <string name="task_delete_list_title">Delete list?</string>
+    <string name="task_delete_list_title">Delete folder?</string>
     <string name="task_delete_list_message">Are you sure you want to delete "%1$s"?</string>
-    <string name="task_delete_list_warning">%1$d tasks inside this list will also be permanently deleted.</string>
+    <string name="task_delete_list_warning">%1$d tasks inside this folder will also be permanently deleted.</string>
     <string name="task_delete_list_confirm">Delete</string>
+
+    <!-- Habits -->
+    <string name="habits_title">Habits</string>
+    <string name="habit_new">New Habit</string>
+    <string name="habit_name">Habit name</string>
+    <string name="habit_type">Type</string>
+    <string name="habit_type_checkoff">Yes / No</string>
+    <string name="habit_type_counter">Counter</string>
+    <string name="habit_frequency">Frequency</string>
+    <string name="habit_frequency_daily">Daily</string>
+    <string name="habit_frequency_weekly">Weekly</string>
+    <string name="habit_frequency_monthly">Monthly</string>
+    <string name="habit_target">Goal</string>
+    <string name="habit_delete_title">Delete habit?</string>
+    <string name="habit_delete_message">Are you sure you want to delete "%1$s"? Its streak will be lost.</string>
+    <string name="habit_duration">Duration</string>
+    <string name="habit_duration_indefinite">Indefinite</string>
+    <string name="habit_duration_fixed">Set duration (e.g. a challenge)</string>
+    <string name="habit_duration_days">Number of days</string>
+    <string name="habit_duration_weeks">Number of weeks</string>
+    <string name="habit_duration_months">Number of months</string>
+    <string name="habit_challenge_finished">Challenge completed</string>
+
+    <string name="home_greeting_morning">Good morning</string>
+    <string name="home_greeting_afternoon">Good afternoon</string>
+    <string name="home_greeting_night">Good evening</string>
 
 </resources>

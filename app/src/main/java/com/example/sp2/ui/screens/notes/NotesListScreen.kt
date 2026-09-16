@@ -7,18 +7,22 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -26,6 +30,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -33,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sp2.R
 import com.example.sp2.model.Note
+import com.example.sp2.ui.components.EmptyState
 
 @Composable
 fun NotesListScreen(
@@ -68,12 +74,11 @@ fun NotesListScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                    .padding(20.dp),
-                verticalArrangement = Arrangement.Center
+                    .padding(20.dp)
             ) {
 
-                Text(
-                    text = stringResource(
+                EmptyState(
+                    title = stringResource(
                         R.string.notes_empty_title
                     )
                 )
@@ -81,12 +86,14 @@ fun NotesListScreen(
 
         } else {
 
-            // Displays saved notes
-            LazyColumn(
+            // Displays saved notes in a 2-column grid, like most note apps
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                    .padding(20.dp),
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
 
@@ -129,9 +136,10 @@ private fun NoteCard(
 
     Box {
 
-        Card(
+        Surface(
             modifier = Modifier
                 .fillMaxWidth()
+                .height(150.dp)
                 .combinedClickable(
                     onClick = {
                         onOpen()
@@ -139,38 +147,48 @@ private fun NoteCard(
                     onLongClick = {
                         showMenu = true
                     }
-                )
+                ),
+            shape = RoundedCornerShape(20.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
         ) {
 
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(12.dp)
             ) {
 
-                // Note title
-                Text(
-                    text = note.title,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
 
-                // Note date
-                Text(
-                    text = note.date
-                )
-
-                // Note preview
-                if (note.content.isNotBlank()) {
-
+                    // Note title
                     Text(
-                        text = note.content,
-                        modifier = Modifier.padding(
-                            top = 8.dp
-                        ),
-                        maxLines = 3,
+                        text = note.title,
+                        style = MaterialTheme.typography.titleSmall,
+                        maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
+
+                    // Note preview
+                    if (note.content.isNotBlank()) {
+
+                        Text(
+                            text = note.content,
+                            style = MaterialTheme.typography.bodySmall,
+                            maxLines = 4,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
                 }
+
+                // Note date, small and tucked into the corner
+                Text(
+                    text = note.date,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.align(Alignment.BottomEnd)
+                )
             }
         }
 

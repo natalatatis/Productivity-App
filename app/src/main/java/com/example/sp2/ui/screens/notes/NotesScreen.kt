@@ -146,6 +146,16 @@ fun NotesScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
 
+            // Note date, shown at the very top, above the title
+            Text(
+                text = noteDate,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(
+                    horizontal = 4.dp
+                )
+            )
+
             // Note title
             TextField(
                 value = title,
@@ -169,16 +179,6 @@ fun NotesScreen(
                     disabledContainerColor = Color.Transparent,
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent
-                )
-            )
-
-            // Note date
-            Text(
-                text = noteDate,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(
-                    horizontal = 4.dp
                 )
             )
 

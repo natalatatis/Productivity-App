@@ -9,8 +9,8 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -28,8 +28,10 @@ fun MyStuffScreen(
     onOpenList: (Int) -> Unit = {}
 ) {
 
-    var selectedTab by remember {
-        mutableIntStateOf(0)
+    // rememberSaveable keeps the selected tab across navigation,
+    // e.g. after creating a note or task and pressing back
+    var selectedTab by rememberSaveable {
+        mutableStateOf(0)
     }
 
     Column(
