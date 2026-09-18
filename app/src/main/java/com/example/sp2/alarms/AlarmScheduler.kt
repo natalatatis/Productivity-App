@@ -87,6 +87,13 @@ object AlarmScheduler {
         val zone = ZoneId.systemDefault()
         val now = LocalDateTime.now(zone)
 
+        // A specific date wins over "next occurrence of this clock time" —
+        // this is what lets Orbi say "in 2 days at 7am" and mean it
+        if (alarm.specificDate != null && alarm.days.isEmpty()) {
+            val candidate = alarm.specificDate.atTime(alarm.time)
+            return candidate.atZone(zone).toInstant().toEpochMilli()
+        }
+
         if (alarm.days.isEmpty()) {
 
             var candidate = now.toLocalDate().atTime(alarm.time)

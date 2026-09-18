@@ -20,7 +20,16 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material.icons.filled.Alarm
+import androidx.compose.material.icons.filled.Mic
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
+import com.example.sp2.ui.screens.orbi.OrbiDialog
+import com.example.sp2.ui.screens.reminders.RemindersViewModel
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
@@ -129,7 +138,7 @@ fun HomeScreen(
     ) {
 
         // Greeting, based on the current time of day, with quick
-        // access to Reminders (alarms + timer) alongside it
+        // access to Orbi (voice) and Reminders alongside it
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -141,11 +150,79 @@ fun HomeScreen(
                 style = MaterialTheme.typography.headlineMedium
             )
 
-            IconButton(onClick = onOpenReminders) {
-                Icon(
-                    imageVector = Icons.Default.Alarm,
-                    contentDescription = stringResource(R.string.reminders_title)
-                )
+            Row {
+
+                val context = LocalContext.current
+                var showOrbi by remember { mutableStateOf(false) }
+
+                val micPermissionLauncher = rememberLauncherForActivityResult(
+                    ActivityResultContracts.RequestPermission()
+                ) { granted ->
+                    if (granted) showOrbi = true
+                }
+
+                IconButton(
+                    onClick = {
+                        val hasPermission = ContextCompat.checkSelfPermission(
+                            context, Manifest.permission.RECORD_AUDIO
+                        ) == PackageManager.PERMISSION_GRANTED
+
+                        if (hasPermission) {
+                            showOrbi = true
+                        } else {
+                            micPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                        }
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Mic,
+                        contentDescription = "Orbi",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+
+                IconButton(onClick = onOpenReminders) {
+                    Icon(
+                        imageVector = Icons.Default.Alarm,
+                        contentDescription = stringResource(R.string.reminders_title)
+                    )
+                }
+
+                if (showOrbi) {
+
+                    val remindersViewModel: RemindersViewModel = viewModel()
+
+                    OrbiDialog(
+                        onDismiss = { showOrbi = false },
+                        onConfirmTask = { title, description, date, time, priority ->
+
+                            taskViewModel.addTask(
+                                title = title,
+                                description = description,
+                                priority = priority,
+                                date = date,
+                                time = time
+                            )
+
+                            // Also creates a matching reminder, since a
+                            // time was given — this is a one-time alarm
+                            // for that exact date (or "tomorrow at this
+                            // time" if no date was mentioned)
+                            if (time != null) {
+                                remindersViewModel.addAlarm(
+                                    time = time,
+                                    label = title,
+                                    days = emptySet(),
+                                    soundUri = null,
+                                    snoozeMinutes = 10,
+                                    specificDate = date
+                                )
+                            }
+
+                            showOrbi = false
+                        }
+                    )
+                }
             }
         }
 

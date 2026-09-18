@@ -25,7 +25,8 @@ class AlarmRepository(
         label: String,
         days: Set<DayOfWeek>,
         soundUri: String?,
-        snoozeMinutes: Int
+        snoozeMinutes: Int,
+        specificDate: java.time.LocalDate? = null
     ): Alarm {
 
         val entity = Alarm(
@@ -33,7 +34,8 @@ class AlarmRepository(
             label = label,
             days = days,
             soundUri = soundUri,
-            snoozeMinutes = snoozeMinutes
+            snoozeMinutes = snoozeMinutes,
+            specificDate = specificDate
         ).toNewEntity()
 
         val id = alarmDao.insertAlarm(entity)

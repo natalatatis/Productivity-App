@@ -15,5 +15,6 @@ data class AlarmEntity(
     val days: String = "",
     val enabled: Boolean = true,
     val soundUri: String? = null,
-    val snoozeMinutes: Int = 10
+    val snoozeMinutes: Int = 10,
+    val specificDate: String? = null
 )

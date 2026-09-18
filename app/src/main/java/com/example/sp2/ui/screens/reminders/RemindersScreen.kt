@@ -265,7 +265,13 @@ private fun AlarmRow(
                 }
 
                 Text(
-                    text = daysLabel(alarm.days),
+                    text = if (alarm.specificDate != null) {
+                        alarm.specificDate.format(
+                            java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")
+                        )
+                    } else {
+                        daysLabel(alarm.days)
+                    },
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

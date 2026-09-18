@@ -42,10 +42,11 @@ class RemindersViewModel(
         label: String,
         days: Set<DayOfWeek>,
         soundUri: String?,
-        snoozeMinutes: Int
+        snoozeMinutes: Int,
+        specificDate: java.time.LocalDate? = null
     ) {
         viewModelScope.launch {
-            val alarm = repository.addAlarm(time, label, days, soundUri, snoozeMinutes)
+            val alarm = repository.addAlarm(time, label, days, soundUri, snoozeMinutes, specificDate)
             AlarmScheduler.schedule(getApplication(), alarm)
         }
     }

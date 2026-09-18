@@ -3,6 +3,7 @@ package com.example.sp2.data.local
 import com.example.sp2.data.local.entity.AlarmEntity
 import com.example.sp2.model.Alarm
 import java.time.DayOfWeek
+import java.time.LocalDate
 import java.time.LocalTime
 
 fun AlarmEntity.toAlarm(): Alarm {
@@ -20,7 +21,8 @@ fun AlarmEntity.toAlarm(): Alarm {
         days = parsedDays,
         enabled = enabled,
         soundUri = soundUri,
-        snoozeMinutes = snoozeMinutes
+        snoozeMinutes = snoozeMinutes,
+        specificDate = specificDate?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
     )
 }
 
@@ -33,7 +35,8 @@ fun Alarm.toNewEntity(): AlarmEntity {
         days = days.joinToString(",") { it.name },
         enabled = true,
         soundUri = soundUri,
-        snoozeMinutes = snoozeMinutes
+        snoozeMinutes = snoozeMinutes,
+        specificDate = specificDate?.toString()
     )
 }
 
@@ -46,6 +49,7 @@ fun Alarm.toEntity(): AlarmEntity {
         days = days.joinToString(",") { it.name },
         enabled = enabled,
         soundUri = soundUri,
-        snoozeMinutes = snoozeMinutes
+        snoozeMinutes = snoozeMinutes,
+        specificDate = specificDate?.toString()
     )
 }

@@ -215,6 +215,15 @@ object DatabaseProvider {
         }
     }
 
+    private val MIGRATION_10_11 = object : Migration(10, 11) {
+
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                "ALTER TABLE `alarms` ADD COLUMN `specificDate` TEXT DEFAULT NULL"
+            )
+        }
+    }
+
     fun getDatabase(context: Context): AppDatabase {
 
         return INSTANCE ?: synchronized(this) {
@@ -233,7 +242,9 @@ object DatabaseProvider {
                     MIGRATION_6_7,
                     MIGRATION_7_8,
                     MIGRATION_8_9,
-                    MIGRATION_9_10
+                    MIGRATION_8_9,
+                    MIGRATION_9_10,
+                    MIGRATION_10_11
                 )
                 .build()
 

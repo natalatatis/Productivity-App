@@ -29,7 +29,7 @@ import com.example.sp2.data.local.entity.TaskListEntity
         AppUsageLogEntity::class,
         AlarmEntity::class
     ],
-    version = 10,
+    version = 11,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

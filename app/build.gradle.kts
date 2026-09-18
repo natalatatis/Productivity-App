@@ -78,6 +78,10 @@ dependencies {
 
     // Para cargar la foto de perfil de Google en Configuración
     implementation("io.coil-kt:coil-compose:2.7.0")
+
+    // Gemini Nano (IA local) — API todavía en beta de Google
+    implementation("com.google.mlkit:genai-prompt:1.0.0-beta4")
+    ksp("com.google.mlkit:genai-schema-compiler:1.0.0-alpha1")
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
