@@ -32,7 +32,7 @@ class MainActivity : ComponentActivity() {
 
                     is AuthUiState.SignedIn -> {
                         if (state.emailVerified) {
-                            AppNavigation()
+                            AppNavigation(authViewModel = authViewModel)
                         } else {
                             VerifyEmailScreen(
                                 email = state.user.email,

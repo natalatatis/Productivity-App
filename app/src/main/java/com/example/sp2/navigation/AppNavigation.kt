@@ -34,7 +34,9 @@ import com.example.sp2.ui.screens.tasks.TaskViewModel
 
 // Controls navigation between the main screens of the app
 @Composable
-fun AppNavigation() {
+fun AppNavigation(
+    authViewModel: com.example.sp2.ui.screens.auth.AuthViewModel
+) {
 
     val navController =
         rememberNavController()
@@ -319,7 +321,7 @@ fun AppNavigation() {
 
             // Settings
             composable(Routes.SETTINGS) {
-                SettingsScreen()
+                SettingsScreen(authViewModel = authViewModel)
             }
 
             // Reminders
