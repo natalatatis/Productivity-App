@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Alarm
+import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
@@ -31,7 +32,8 @@ fun CreateActionDialog(
     onCreateNote: () -> Unit,
     onCreateTask: () -> Unit,
     onCreateHabit: () -> Unit,
-    onCreateAlarm: () -> Unit
+    onCreateAlarm: () -> Unit,
+    onCreateEvent: () -> Unit
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -207,6 +209,45 @@ fun CreateActionDialog(
 
                             Text(
                                 text = stringResource(R.string.create_alarm_description),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Create event
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable(onClick = onCreateEvent),
+                    shape = MaterialTheme.shapes.large,
+                    color = MaterialTheme.colorScheme.surfaceContainer
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Event,
+                            contentDescription = null,
+                            modifier = Modifier.size(28.dp)
+                        )
+
+                        Column(
+                            modifier = Modifier.padding(start = 16.dp)
+                        ) {
+                            Text(
+                                text = stringResource(R.string.event_new),
+                                style = MaterialTheme.typography.titleMedium
+                            )
+
+                            Text(
+                                text = stringResource(R.string.create_event_description),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )

@@ -226,4 +226,19 @@
     <string name="search_notes">Buscar notas</string>
     <string name="create_alarm">Nueva alarma</string>
     <string name="create_alarm_description">Configura un recordatorio con hora</string>
+
+    <string name="events_title">Eventos</string>
+    <string name="event_new">Nuevo evento</string>
+    <string name="event_edit">Editar evento</string>
+    <string name="event_time">Hora</string>
+    <string name="event_add_time">Agregar hora</string>
+    <string name="event_remove_time">Quitar hora</string>
+    <string name="create_event_description">Agrega algo a tu calendario</string>
+    <string name="event_filter_today">Hoy</string>
+    <string name="event_filter_tomorrow">Mañana</string>
+    <string name="event_filter_week">Esta semana</string>
+    <string name="event_filter_month">Este mes</string>
+    <string name="event_filter_all">Todos</string>
+    <string name="events_empty_title">No hay eventos</string>
+    <string name="events_empty_description">Presiona + para agregar tu primer evento</string>
 </resources>

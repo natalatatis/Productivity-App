@@ -62,8 +62,13 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sp2.R
+import com.example.sp2.model.Event
 import com.example.sp2.model.Habit
 import com.example.sp2.model.Task
+import com.example.sp2.ui.components.CreateEventDialog
+import com.example.sp2.ui.components.EventItem
+import com.example.sp2.ui.screens.events.EventViewModel
+import androidx.compose.material3.FilterChip
 import com.example.sp2.ui.components.CreateHabitDialog
 import com.example.sp2.ui.components.EmptyState
 import com.example.sp2.ui.components.HabitProgressCard
@@ -83,12 +88,17 @@ fun HomeScreen(
     onOpenReminders: () -> Unit = {},
     taskViewModel: TaskViewModel = viewModel(),
     habitViewModel: HabitViewModel = viewModel(),
-    appUsageViewModel: AppUsageViewModel = viewModel()
+    appUsageViewModel: AppUsageViewModel = viewModel(),
+    eventViewModel: EventViewModel = viewModel()
 ) {
 
     val tasks by taskViewModel.tasks.collectAsState()
     val habits by habitViewModel.habits.collectAsState()
     val usage by appUsageViewModel.usage.collectAsState()
+    val events by eventViewModel.events.collectAsState()
+
+    var showCreateEventDialog by remember { mutableStateOf(false) }
+    var eventToEdit by remember { mutableStateOf<Event?>(null) }
 
     // Re-checks the app-usage streak every time Home becomes visible
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -127,8 +137,8 @@ fun HomeScreen(
         mutableStateOf<Habit?>(null)
     }
 
-    // Controls the swipeable Today/Habits pages
-    val pagerState = rememberPagerState(pageCount = { 2 })
+    // Controls the swipeable Today/Habits/Events pages
+    val pagerState = rememberPagerState(pageCount = { 3 })
     val coroutineScope = rememberCoroutineScope()
 
     Column(
@@ -242,7 +252,8 @@ fun HomeScreen(
 
             val pageTabs = listOf(
                 stringResource(R.string.home_today),
-                stringResource(R.string.habits_title)
+                stringResource(R.string.habits_title),
+                stringResource(R.string.events_title)
             )
 
             pageTabs.forEachIndexed { index, label ->
@@ -306,8 +317,42 @@ fun HomeScreen(
                     onLongClick = { habitToDelete = it },
                     onAddHabit = { showCreateHabitDialog = true }
                 )
+
+                2 -> EventsPage(
+                    events = events,
+                    onEdit = { eventToEdit = it },
+                    onDelete = { eventViewModel.deleteEvent(it) },
+                    onAddEvent = { showCreateEventDialog = true }
+                )
             }
         }
+    }
+
+    // Create/edit event dialog
+    if (showCreateEventDialog || eventToEdit != null) {
+
+        CreateEventDialog(
+            initialEvent = eventToEdit,
+            onDismiss = {
+                showCreateEventDialog = false
+                eventToEdit = null
+            },
+            onCreate = { title, description, date, time ->
+
+                val current = eventToEdit
+
+                if (current != null) {
+                    eventViewModel.updateEvent(
+                        current.copy(title = title, description = description, date = date, time = time)
+                    )
+                } else {
+                    eventViewModel.addEvent(title, description, date, time)
+                }
+
+                showCreateEventDialog = false
+                eventToEdit = null
+            }
+        )
     }
 
     // Create habit dialog
@@ -478,6 +523,110 @@ private fun HabitsPage(
                     contentDescription = null
                 )
                 Text(text = stringResource(R.string.habit_new))
+            }
+        }
+    }
+}
+
+private enum class EventFilter { TODAY, TOMORROW, WEEK, MONTH, ALL }
+
+// The "Events" swipeable page
+@Composable
+private fun EventsPage(
+    events: List<Event>,
+    onEdit: (Event) -> Unit,
+    onDelete: (Event) -> Unit,
+    onAddEvent: () -> Unit
+) {
+
+    var filter by remember { mutableStateOf(EventFilter.TODAY) }
+
+    val today = LocalDate.now()
+
+    val filteredEvents = when (filter) {
+        EventFilter.TODAY -> events.filter { it.date == today }
+        EventFilter.TOMORROW -> events.filter { it.date == today.plusDays(1) }
+        EventFilter.WEEK -> events.filter { it.date >= today && it.date <= today.plusDays(7) }
+        EventFilter.MONTH -> events.filter { it.date >= today && it.date <= today.plusMonths(1) }
+        EventFilter.ALL -> events
+    }.sortedWith(compareBy({ it.date }, { it.time ?: LocalTime.MIN }))
+
+    Column(modifier = Modifier.fillMaxSize()) {
+
+        androidx.compose.foundation.lazy.LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            item {
+                FilterChip(
+                    selected = filter == EventFilter.TODAY,
+                    onClick = { filter = EventFilter.TODAY },
+                    label = { Text(stringResource(R.string.event_filter_today)) }
+                )
+            }
+            item {
+                FilterChip(
+                    selected = filter == EventFilter.TOMORROW,
+                    onClick = { filter = EventFilter.TOMORROW },
+                    label = { Text(stringResource(R.string.event_filter_tomorrow)) }
+                )
+            }
+            item {
+                FilterChip(
+                    selected = filter == EventFilter.WEEK,
+                    onClick = { filter = EventFilter.WEEK },
+                    label = { Text(stringResource(R.string.event_filter_week)) }
+                )
+            }
+            item {
+                FilterChip(
+                    selected = filter == EventFilter.MONTH,
+                    onClick = { filter = EventFilter.MONTH },
+                    label = { Text(stringResource(R.string.event_filter_month)) }
+                )
+            }
+            item {
+                FilterChip(
+                    selected = filter == EventFilter.ALL,
+                    onClick = { filter = EventFilter.ALL },
+                    label = { Text(stringResource(R.string.event_filter_all)) }
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+
+            if (filteredEvents.isEmpty()) {
+                item {
+                    EmptyState(
+                        title = stringResource(R.string.events_empty_title),
+                        description = stringResource(R.string.events_empty_description)
+                    )
+                }
+            }
+
+            items(
+                items = filteredEvents,
+                key = { "event_${it.id}" }
+            ) { event ->
+
+                EventItem(
+                    event = event,
+                    onEdit = { onEdit(event) },
+                    onDelete = { onDelete(event) },
+                    showDate = filter != EventFilter.TODAY
+                )
+            }
+
+            item {
+                TextButton(onClick = onAddEvent) {
+                    Icon(imageVector = Icons.Default.Add, contentDescription = null)
+                    Text(text = stringResource(R.string.event_new))
+                }
             }
         }
     }

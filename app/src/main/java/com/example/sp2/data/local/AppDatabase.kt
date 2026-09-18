@@ -4,6 +4,7 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import com.example.sp2.data.local.dao.AlarmDao
 import com.example.sp2.data.local.dao.AppUsageDao
+import com.example.sp2.data.local.dao.EventDao
 import com.example.sp2.data.local.dao.HabitDao
 import com.example.sp2.data.local.dao.NoteDao
 import com.example.sp2.data.local.dao.NoteListDao
@@ -11,6 +12,7 @@ import com.example.sp2.data.local.dao.TaskDao
 import com.example.sp2.data.local.dao.TaskListDao
 import com.example.sp2.data.local.entity.AlarmEntity
 import com.example.sp2.data.local.entity.AppUsageLogEntity
+import com.example.sp2.data.local.entity.EventEntity
 import com.example.sp2.data.local.entity.AppUsageStateEntity
 import com.example.sp2.data.local.entity.HabitEntity
 import com.example.sp2.data.local.entity.NoteEntity
@@ -29,7 +31,7 @@ import com.example.sp2.data.local.entity.TaskListEntity
         AppUsageLogEntity::class,
         AlarmEntity::class
     ],
-    version = 11,
+    version = 12,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -47,4 +49,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun appUsageDao(): AppUsageDao
 
     abstract fun alarmDao(): AlarmDao
+
+    abstract fun eventDao(): EventDao
 }

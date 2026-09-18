@@ -34,9 +34,17 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sp2.R
 import com.example.sp2.data.LanguageManager
+import com.example.sp2.model.Event
+import com.example.sp2.ui.components.CreateEventDialog
 import com.example.sp2.ui.components.EmptyState
+import com.example.sp2.ui.components.EventItem
 import com.example.sp2.ui.components.TaskItem
+import com.example.sp2.ui.screens.events.EventViewModel
 import com.example.sp2.ui.screens.tasks.TaskViewModel
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Icon
+import androidx.compose.material3.TextButton
 import com.kizitonwose.calendar.compose.HorizontalCalendar
 import com.kizitonwose.calendar.compose.rememberCalendarState
 import com.kizitonwose.calendar.core.CalendarDay
@@ -53,8 +61,14 @@ import androidx.compose.ui.platform.LocalContext
 @Composable
 fun CalendarScreen(
     onEditTask: (Int) -> Unit = {},
-    taskViewModel: TaskViewModel = viewModel()
+    taskViewModel: TaskViewModel = viewModel(),
+    eventViewModel: EventViewModel = viewModel()
 ) {
+
+    val events by eventViewModel.events.collectAsState()
+
+    var showCreateEventDialog by remember { mutableStateOf(false) }
+    var eventToEdit by remember { mutableStateOf<Event?>(null) }
 
     val currentMonth = YearMonth.now()
 
@@ -184,10 +198,15 @@ fun CalendarScreen(
                     it.date == day.date
                 }
 
+                val hasEvent = events.any {
+                    it.date == day.date
+                }
+
                 CalendarDayContent(
                     day = day,
                     isSelected = day.date == selectedDate,
                     hasTask = hasTask,
+                    hasEvent = hasEvent,
                     onClick = {
                         selectedDate = day.date
                     }
@@ -224,8 +243,12 @@ fun CalendarScreen(
 
             } else {
 
-                // Gets the tasks assigned to the selected day
+                // Gets the tasks and events assigned to the selected day
                 val tasksForDay = tasks.filter {
+                    it.date == currentSelectedDate
+                }
+
+                val eventsForDay = events.filter {
                     it.date == currentSelectedDate
                 }
 
@@ -245,50 +268,87 @@ fun CalendarScreen(
                         modifier = Modifier.height(12.dp)
                     )
 
-                    // Shows a message if the selected day has no tasks
-                    if (tasksForDay.isEmpty()) {
+                    if (tasksForDay.isEmpty() && eventsForDay.isEmpty()) {
 
                         EmptyState(
                             title = stringResource(
                                 R.string.calendar_no_tasks_this_day
                             )
                         )
+                    }
 
-                    } else {
+                    LazyColumn(
+                        contentPadding = PaddingValues(bottom = 20.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
 
-                        // Displays the tasks for the selected day
-                        LazyColumn(
-                            contentPadding = PaddingValues(bottom = 20.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
+                        if (tasksForDay.isNotEmpty()) {
 
                             items(
                                 items = tasksForDay,
-                                key = { it.id }
+                                key = { "task_${it.id}" }
                             ) { task ->
 
                                 TaskItem(
                                     task = task,
-
-                                    // Opens the task editor
-                                    onEdit = {
-                                        onEditTask(task.id)
-                                    },
-
-                                    // Changes the completed state in Room
-                                    onToggle = {
-                                        taskViewModel.toggleTask(task)
-                                    },
-
-                                    // Deletes the task from Room
-                                    onDelete = {
-                                        taskViewModel.deleteTask(task)
-                                    }
+                                    onEdit = { onEditTask(task.id) },
+                                    onToggle = { taskViewModel.toggleTask(task) },
+                                    onDelete = { taskViewModel.deleteTask(task) }
                                 )
+                            }
+                        }
+
+                        if (eventsForDay.isNotEmpty()) {
+
+                            items(
+                                items = eventsForDay,
+                                key = { "event_${it.id}" }
+                            ) { event ->
+
+                                EventItem(
+                                    event = event,
+                                    onEdit = { eventToEdit = event },
+                                    onDelete = { eventViewModel.deleteEvent(event) }
+                                )
+                            }
+                        }
+
+                        item {
+                            TextButton(onClick = { showCreateEventDialog = true }) {
+                                Icon(imageVector = Icons.Default.Add, contentDescription = null)
+                                Text(text = stringResource(R.string.event_new))
                             }
                         }
                     }
                 }
+            }
+
+            // Create/edit event dialog, pre-filled with the selected date
+            if (showCreateEventDialog || eventToEdit != null) {
+
+                CreateEventDialog(
+                    initialDate = currentSelectedDate,
+                    initialEvent = eventToEdit,
+                    onDismiss = {
+                        showCreateEventDialog = false
+                        eventToEdit = null
+                    },
+                    onCreate = { title, description, date, time ->
+
+                        val current = eventToEdit
+
+                        if (current != null) {
+                            eventViewModel.updateEvent(
+                                current.copy(title = title, description = description, date = date, time = time)
+                            )
+                        } else {
+                            eventViewModel.addEvent(title, description, date, time)
+                        }
+
+                        showCreateEventDialog = false
+                        eventToEdit = null
+                    }
+                )
             }
         }
     }
@@ -299,6 +359,7 @@ fun CalendarDayContent(
     day: CalendarDay,
     isSelected: Boolean,
     hasTask: Boolean,
+    hasEvent: Boolean,
     onClick: () -> Unit
 ) {
 
@@ -352,20 +413,37 @@ fun CalendarDayContent(
                 )
             }
 
-            // Small dot shown under days that have a task
-            Box(
-                modifier = Modifier
-                    .padding(top = 2.dp)
-                    .size(4.dp)
-                    .background(
-                        color = if (hasTask) {
-                            MaterialTheme.colorScheme.error
-                        } else {
-                            androidx.compose.ui.graphics.Color.Transparent
-                        },
-                        shape = CircleShape
-                    )
-            )
+            // Small dots shown under days that have a task and/or an event
+            Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+
+                Box(
+                    modifier = Modifier
+                        .padding(top = 2.dp)
+                        .size(4.dp)
+                        .background(
+                            color = if (hasTask) {
+                                MaterialTheme.colorScheme.error
+                            } else {
+                                androidx.compose.ui.graphics.Color.Transparent
+                            },
+                            shape = CircleShape
+                        )
+                )
+
+                Box(
+                    modifier = Modifier
+                        .padding(top = 2.dp)
+                        .size(4.dp)
+                        .background(
+                            color = if (hasEvent) {
+                                MaterialTheme.colorScheme.tertiary
+                            } else {
+                                androidx.compose.ui.graphics.Color.Transparent
+                            },
+                            shape = CircleShape
+                        )
+                )
+            }
         }
     }
 }

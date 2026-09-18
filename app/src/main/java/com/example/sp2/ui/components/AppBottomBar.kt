@@ -20,6 +20,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.sp2.R
 import com.example.sp2.navigation.Routes
+import com.example.sp2.ui.screens.events.EventViewModel
 import com.example.sp2.ui.screens.home.HabitViewModel
 import com.example.sp2.ui.screens.reminders.RemindersViewModel
 
@@ -34,7 +35,8 @@ data class BottomNavItem(
 fun AppBottomBar(
     navController: NavHostController,
     habitViewModel: HabitViewModel,
-    remindersViewModel: RemindersViewModel
+    remindersViewModel: RemindersViewModel,
+    eventViewModel: EventViewModel
 ) {
     // Controls whether the create dialog is visible
     var showCreateDialog by remember {
@@ -49,6 +51,11 @@ fun AppBottomBar(
 
     // Controls the "new alarm" dialog, same reasoning
     var showCreateAlarmDialog by remember {
+        mutableStateOf(false)
+    }
+
+    // Controls the "new event" dialog, same reasoning
+    var showCreateEventDialog by remember {
         mutableStateOf(false)
     }
 
@@ -137,6 +144,30 @@ fun AppBottomBar(
             onCreateAlarm = {
                 showCreateDialog = false
                 showCreateAlarmDialog = true
+            },
+            onCreateEvent = {
+                showCreateDialog = false
+                showCreateEventDialog = true
+            }
+        )
+    }
+
+    // Create event dialog
+    if (showCreateEventDialog) {
+        com.example.sp2.ui.components.CreateEventDialog(
+            onDismiss = {
+                showCreateEventDialog = false
+            },
+            onCreate = { title, description, date, time ->
+
+                eventViewModel.addEvent(
+                    title = title,
+                    description = description,
+                    date = date,
+                    time = time
+                )
+
+                showCreateEventDialog = false
             }
         )
     }

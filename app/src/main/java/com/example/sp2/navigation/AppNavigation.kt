@@ -14,6 +14,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.sp2.ui.components.AppBottomBar
 import com.example.sp2.ui.screens.calendar.CalendarScreen
+import com.example.sp2.ui.screens.events.EventViewModel
 import com.example.sp2.ui.screens.home.HabitViewModel
 import com.example.sp2.ui.screens.reminders.RemindersViewModel
 import com.example.sp2.ui.screens.home.HomeScreen
@@ -64,6 +65,11 @@ fun AppNavigation(
     val remindersViewModel:
             RemindersViewModel = viewModel()
 
+    // Shared event ViewModel — needed in Home, Calendar, and the
+    // global "+" button
+    val eventViewModel:
+            EventViewModel = viewModel()
+
     val noteLists by
     noteListViewModel.noteLists.collectAsState()
 
@@ -80,7 +86,8 @@ fun AppNavigation(
             AppBottomBar(
                 navController = navController,
                 habitViewModel = habitViewModel,
-                remindersViewModel = remindersViewModel
+                remindersViewModel = remindersViewModel,
+                eventViewModel = eventViewModel
             )
         }
     ) { innerPadding ->
@@ -111,7 +118,9 @@ fun AppNavigation(
                     taskViewModel =
                         taskViewModel,
                     habitViewModel =
-                        habitViewModel
+                        habitViewModel,
+                    eventViewModel =
+                        eventViewModel
                 )
             }
 
@@ -315,7 +324,10 @@ fun AppNavigation(
                     },
 
                     taskViewModel =
-                        taskViewModel
+                        taskViewModel,
+
+                    eventViewModel =
+                        eventViewModel
                 )
             }
 
